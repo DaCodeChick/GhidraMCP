@@ -7,6 +7,7 @@
 # ///
 
 import sys
+import json
 import requests
 import argparse
 import logging
@@ -288,56 +289,95 @@ def list_strings(offset: int = 0, limit: int = 2000, filter: str = None) -> list
     return safe_get("strings", params)
 
 @mcp.tool()
-def get_data_by_label(label: str) -> str:
+def create_struct(name: str, category: str = None, size: int = 0, members: list = None) -> str:
     """
-    Get information about a data label.
-
+    Create a new structure.
+    
     Args:
-        label: Exact symbol / label name to look up in the program.
-
+        name: The name of the new structure.
+        category: The category path for the structure (e.g., /my_structs). Defaults to root.
+        size: The initial size of the structure.
+        members: A list of member dictionaries to add to the new struct.
+                 Each dict should have 'name', 'type', and optionally 'offset' and 'comment'.
+                 The 'type' should be a builtin C datatype or a structure name defined in Ghidra data type manager.
+                 Pointers are specified with asterisk, e.g. void*, int* or PCSTR, PVOID for Windows types
+                 Example: [{"name": "field1", "type": "int", "offset": 0, "comment": "my field"}]
+                 
     Returns:
-        A newline-separated string.  
-        Each line has:  "<label> -> <address> : <value-representation>"
-        If the label is not found, an explanatory message is returned.
+        A status message indicating success or failure.
     """
-    return "\n".join(safe_get("get_data_by_label", {"label": label}))
+    data = {"name": name, "size": str(size)}
+    if category:
+        data["category"] = category
+    if members:
+        data["members"] = json.dumps(members)
+    return safe_post("create_struct", data)
 
 @mcp.tool()
-def get_bytes(address: str, size: int = 1) -> str:
+def add_struct_members(struct_name: str, members: list, category: str = None) -> str:
     """
-    Read raw bytes from memory and dump them in hex.
-
+    Add a member to an existing structure.
+    
     Args:
-        address: Start address in hex notation (e.g. "0x1401003A0").
-        size:    Number of bytes to read (default: 1).
-
+        struct_name: The name of the structure to modify.
+        members: A list of member dictionaries to add to the new struct.
+                 Each dict should have 'name', 'type', and optionally 'offset' and 'comment'.
+                 The 'type' should be a builtin C datatype or a structure name defined in Ghidra data type manager.
+                 Pointers are specified with asterisk, e.g. void*, int* or PCSTR, PVOID for Windows types
+                 Example: [{"name": "field1", "type": "int", "offset": 0, "comment": "my field"}]
+        category: The category path for the structure. Defaults to root.
+        
     Returns:
-        A hexdump-style multiline string.  
-        Format: "<address>  <16-byte hex sequence…>".  
-        On error (invalid address / size ≤ 0) an error message is returned.
+        A status message indicating success or failure.
     """
-    return "\n".join(safe_get("get_bytes", {"address": address, "size": size}))
+
+    data = {"struct_name": struct_name, "members": json.dumps(members)}
+    if category:
+        data["category"] = category
+    return safe_post("add_struct_members", data)
 
 @mcp.tool()
-def search_bytes(bytes_hex: str, offset: int = 0, limit: int = 100) -> list:
+def clear_struct(struct_name: str, category: str = None) -> str:
     """
-    Search the whole program for a specific byte sequence.
-
+    Remove all members from a structure.
+    
     Args:
-        bytes_hex: Byte sequence encoded as a hex string
-                   (e.g. "DEADBEEF" or "DE AD BE EF").
-        offset:    Pagination offset for results (default: 0).
-        limit:     Maximum number of hit addresses to return (default: 100).
-
+        struct_name: The name of the structure to clear.
+        category: The category path for the structure. Defaults to root.
+        
     Returns:
-        A list of addresses (as hex strings) where the sequence was found,
-        subject to pagination.  If no hits, an explanatory message list
-        such as ["No matches found"] is returned.
+        A status message indicating success or failure.
     """
-    return safe_get(
-        "search_bytes",
-        {"bytes": bytes_hex, "offset": offset, "limit": limit},
-    )
+    data = {"struct_name": struct_name}
+    if category:
+        data["category"] = category
+    return safe_post("clear_struct", data)
+
+@mcp.tool()
+def get_struct(name: str, category: str = None) -> dict:
+    """
+    Get a struct's definition.
+    
+    Args:
+        name: The name of the structure.
+        category: The category path for the structure. Defaults to root.
+        
+    Returns:
+        A dictionary representing the struct, or an error message.
+    """
+    params = {"name": name}
+    if category:
+        params["category"] = category
+    
+    response_lines = safe_get("get_struct", params)
+    response_str = "\n".join(response_lines)
+    
+    try:
+        # Attempt to parse the JSON response
+        return json.loads(response_str)
+    except json.JSONDecodeError:
+        # If it's not JSON, it's likely an error message
+        return {"error": response_str}
 
 def main():
     parser = argparse.ArgumentParser(description="MCP server for Ghidra")
