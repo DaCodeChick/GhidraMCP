@@ -43,6 +43,7 @@ import ghidra.program.model.data.Structure;
 import ghidra.program.model.data.StructureDataType;
 import ghidra.program.model.data.PointerDataType;
 import ghidra.program.model.data.Undefined1DataType;
+import ghidra.program.model.listing.Variable;
 import ghidra.program.model.mem.Memory;
 import ghidra.app.decompiler.component.DecompilerUtils;
 import ghidra.app.decompiler.ClangToken;
@@ -54,25 +55,18 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
 import javax.swing.SwingUtilities;
-import javax.xml.crypto.Data;
-import javax.xml.stream.events.Namespace;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.classfile.Instruction;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 import ghidra.program.model.data.CategoryPath;
 import ghidra.app.services.DataTypeManagerService;
@@ -1876,19 +1870,20 @@ public class GhidraMCPPlugin extends Plugin {
 		DataTypeParser parser = null;
 
 		for (DataTypeManager manager : managerList) {
-            try {
-                parser = new DataTypeParser(manager, null, null, AllowedDataTypes.ALL);
-                dt = parser.parse(typeName);
-                if (dt != null) {
-                    return dt; // Found a successful parse, return
+			try {
+				parser = new DataTypeParser(manager, null, null, AllowedDataTypes.ALL);
+				dt = parser.parse(typeName);
+				if (dt != null) {
+					return dt; // Found a successful parse, return
 				}
 			} catch (Exception e) {
-                // Continue to next manager if this one fails
-            }
+				// Continue to next manager if this one fails
+			}
+		}
 
 		// Fallback to int if we couldn't find it
-        Msg.warn(this, "Unknown type: " + typeName + ", defaulting to int");
-        return dtm.getDataType("/int");
+		Msg.warn(this, "Unknown type: " + typeName + ", defaulting to int");
+		return dtm.getDataType("/int");
 	}
 
 	/**
