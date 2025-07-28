@@ -136,8 +136,16 @@ public class GhidraMCPPlugin extends Plugin {
 	/** Configuration option name for the server port setting */
 	private static final String PORT_OPTION_NAME = "Server Port";
 
+	/** Configuration option name for the decompile timeout setting */
+	private static final String DECOMPILE_TIMEOUT_OPTION_NAME = "Decompile Timeout";
+
 	/** Default port number for the HTTP server (8080) */
 	private static final int DEFAULT_PORT = 8080;
+
+	/** Default decompile timeout in seconds */
+	private static final int DEFAULT_DECOMPILE_TIMEOUT = 30;
+
+	private int decompileTimeout;
 
 	/**
 	 * Constructs a new GhidraMCP plugin instance and initializes the HTTP server.
@@ -172,6 +180,10 @@ public class GhidraMCPPlugin extends Plugin {
 		options.registerOption(PORT_OPTION_NAME, DEFAULT_PORT,
 				null, // No help location for now
 				"The network port number the embedded HTTP server will listen on. " +
+						"Requires Ghidra restart or plugin reload to take effect after changing.");
+		options.registerOption(DECOMPILE_TIMEOUT_OPTION_NAME, DEFAULT_DECOMPILE_TIMEOUT,
+				null,
+				"Decompilation timeout. " +
 						"Requires Ghidra restart or plugin reload to take effect after changing.");
 
 		try {
@@ -765,7 +777,8 @@ public class GhidraMCPPlugin extends Plugin {
 		decomp.openProgram(program);
 		for (Function func : program.getFunctionManager().getFunctions(true)) {
 			if (func.getName().equals(name)) {
-				DecompileResults result = decomp.decompileFunction(func, 30, new ConsoleTaskMonitor());
+				DecompileResults result = decomp.decompileFunction(func, this.decompileTimeout,
+						new ConsoleTaskMonitor());
 				if (result != null && result.decompileCompleted()) {
 					return result.getDecompiledFunction().getC();
 				} else {
@@ -889,7 +902,7 @@ public class GhidraMCPPlugin extends Plugin {
 			return "Function not found";
 		}
 
-		DecompileResults result = decomp.decompileFunction(func, 30, new ConsoleTaskMonitor());
+		DecompileResults result = decomp.decompileFunction(func, this.decompileTimeout, new ConsoleTaskMonitor());
 		if (result == null || !result.decompileCompleted()) {
 			return "Decompilation failed";
 		}
@@ -1115,7 +1128,7 @@ public class GhidraMCPPlugin extends Plugin {
 
 			DecompInterface decomp = new DecompInterface();
 			decomp.openProgram(program);
-			DecompileResults result = decomp.decompileFunction(func, 30, new ConsoleTaskMonitor());
+			DecompileResults result = decomp.decompileFunction(func, this.decompileTimeout, new ConsoleTaskMonitor());
 
 			return (result != null && result.decompileCompleted())
 					? result.getDecompiledFunction().getC()
@@ -1554,7 +1567,7 @@ public class GhidraMCPPlugin extends Plugin {
 		decomp.setSimplificationStyle("decompile"); // Full decompilation
 
 		// Decompile the function
-		DecompileResults results = decomp.decompileFunction(func, 60, new ConsoleTaskMonitor());
+		DecompileResults results = decomp.decompileFunction(func, this.decompileTimeout, new ConsoleTaskMonitor());
 
 		if (!results.decompileCompleted()) {
 			Msg.error(this, "Could not decompile function: " + results.getErrorMessage());
