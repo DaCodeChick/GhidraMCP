@@ -3,6 +3,7 @@ package com.lauriewired.handlers.act;
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.app.decompiler.DecompInterface;
+import ghidra.app.decompiler.DecompileOptions;
 import ghidra.app.decompiler.DecompileResults;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.listing.Function;
@@ -56,6 +57,9 @@ public final class DecompileFunctionByName extends Handler {
 		if (program == null)
 			return "No program loaded";
 		DecompInterface decomp = new DecompInterface();
+		DecompileOptions options = new DecompileOptions();
+		options.setRespectReadOnly(true);
+		decomp.setOptions(options);
 		decomp.openProgram(program);
 		for (Function func : program.getFunctionManager().getFunctions(true)) {
 			if (func.getName().equals(name)) {
