@@ -23,7 +23,7 @@ public final class GetBytes extends Handler {
 	 * @param tool The PluginTool instance to use.
 	 */
 	public GetBytes(PluginTool tool) {
-		super("/get_bytes");
+		super(tool, "/get_bytes");
 	}
 
 	/**
@@ -48,7 +48,7 @@ public final class GetBytes extends Handler {
 	 * @return A string representation of the bytes in hex format.
 	 */
 	private String getBytes(String addressStr, int size) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (addressStr == null || addressStr.isEmpty())

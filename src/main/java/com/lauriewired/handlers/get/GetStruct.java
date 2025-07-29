@@ -12,7 +12,7 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 public final class GetStruct extends Handler {
 	public GetStruct(PluginTool tool) {
-		super("/get_struct");
+		super(tool, "/get_struct");
 	}
 
 	@Override

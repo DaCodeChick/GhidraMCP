@@ -14,7 +14,8 @@ import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
- * Handler to retrieve data associated with a specific label in the current program.
+ * Handler to retrieve data associated with a specific label in the current
+ * program.
  * It responds with the address and value of the data defined at that label.
  */
 public final class GetDataByLabel extends Handler {
@@ -24,7 +25,7 @@ public final class GetDataByLabel extends Handler {
 	 * @param tool The PluginTool instance to use for accessing the current program.
 	 */
 	public GetDataByLabel(PluginTool tool) {
-		super("/get_data_by_label");
+		super(tool, "/get_data_by_label");
 	}
 
 	/**
@@ -44,16 +45,18 @@ public final class GetDataByLabel extends Handler {
 	 * Retrieves data associated with the specified label in the current program.
 	 * 
 	 * @param label The label to search for in the current program.
-	 * @return A string containing the address and value of the data defined at that label,
-	 *         or an error message if the label is not found or no program is loaded.
+	 * @return A string containing the address and value of the data defined at that
+	 *         label,
+	 *         or an error message if the label is not found or no program is
+	 *         loaded.
 	 */
 	private String getDataByLabel(String label) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (label == null || label.isEmpty())
 			return "Label is required";
-		
+
 		SymbolTable st = program.getSymbolTable();
 		Symbol it = st.getSymbol(label);
 		if (!it.hasNext())
@@ -64,7 +67,8 @@ public final class GetDataByLabel extends Handler {
 			Symbol s = it.next();
 			Address a = s.getAddress();
 			Data d = program.getListing().getDefinedDataAt(a);
-			String v = (d != null) ? escapeString(String.valueOf(d.getDefaultValueRepresentation())) : "(no defined data)";
+			String v = (d != null) ? escapeString(String.valueOf(d.getDefaultValueRepresentation()))
+					: "(no defined data)";
 			sb.append(String.format("%s -> %s : %s%n", label, a, v));
 		}
 		return sb.toString();

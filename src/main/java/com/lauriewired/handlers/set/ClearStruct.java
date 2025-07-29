@@ -12,7 +12,7 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 public final class ClearStruct extends Handler {
 	public ClearStruct(PluginTool tool) {
-		super("/clear_struct");
+		super(tool, "/clear_struct");
 	}
 
 	@Override

@@ -10,11 +10,12 @@ import ghidra.util.Msg;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ghidra.app.services.DataTypeManagerService;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
-import ghidra.program.model.data.DataTypeManagerService;
-import ghidra.program.model.data.DataTypeParser;
+import ghidra.util.data.DataTypeParser;
 import ghidra.util.data.DataTypeParser.AllowedDataTypes;
 
 /**
@@ -36,12 +37,13 @@ public final class GhidraUtils {
 
 	/**
 	 * Resolves a data type by name, handling common types and pointer types
-	 * 
+	 *
+	 * @param tool     The plugin tool to use for services
 	 * @param dtm      The data type manager
 	 * @param typeName The type name to resolve
 	 * @return The resolved DataType, or null if not found
 	 */
-	public static DataType resolveDataType(DataTypeManager dtm, String typeName) {
+	public static DataType resolveDataType(PluginTool tool, DataTypeManager dtm, String typeName) {
 		DataTypeManagerService dtms = tool.getService(DataTypeManagerService.class);
 		DataTypeManager[] managers = dtms.getDataTypeManagers();
 		DataType dt = null;
@@ -68,7 +70,7 @@ public final class GhidraUtils {
 		}
 
 		// Fallback to int if we couldn't find it
-		Msg.warn(this, "Unknown type: " + typeName + ", defaulting to int");
+		Msg.warn(GhidraUtils.class, "Unknown type: " + typeName + ", defaulting to int");
 		return dtm.getDataType("/int");
 	}
 

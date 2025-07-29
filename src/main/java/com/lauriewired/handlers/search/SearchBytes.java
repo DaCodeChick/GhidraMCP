@@ -26,7 +26,7 @@ public final class SearchBytes extends Handler {
 	 * @param tool The PluginTool instance to use.
 	 */
 	public SearchBytes(PluginTool tool) {
-		super("/search_bytes");
+		super(tool, "/search_bytes");
 	}
 
 	/**
@@ -53,7 +53,7 @@ public final class SearchBytes extends Handler {
 	 * @return A string containing the search results, formatted for pagination.
 	 */
 	private String searchBytes(String bytesHex, int offset, int limit) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (bytesHex == null || bytesHex.isEmpty())

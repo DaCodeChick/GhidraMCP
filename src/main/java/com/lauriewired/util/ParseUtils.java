@@ -1,6 +1,7 @@
 package com.lauriewired.util;
 
 import com.sun.net.httpserver.HttpExchange;
+import ghidra.program.model.address.Address;
 import ghidra.util.Msg;
 
 import java.io.IOException;
@@ -152,5 +153,25 @@ public final class ParseUtils {
 		try (OutputStream os = exchange.getResponseBody()) {
 			os.write(bytes);
 		}
+	}
+
+	/**
+	 * Generate a hexdump of a byte array starting from a given base address.
+	 * 
+	 * @param base The base address to start the hexdump from.
+	 * @param buf  The byte array to generate the hexdump for.
+	 * @param len  The number of bytes to include in the hexdump.
+	 * @return A string representation of the hexdump.
+	 */
+	public static String hexdump(Address base, byte[] buf, int len) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < len; i += 16) {
+			sb.append(String.format("%s  ", base.add(i)));
+			for (int j = 0; j < 16 && (i + j) < len; j++) {
+				sb.append(String.format("%02X ", buf[i + j]));
+			}
+			sb.append('\n');
+		}
+		return sb.toString();
 	}
 }

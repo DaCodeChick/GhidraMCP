@@ -4,8 +4,10 @@ import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.data.DataType;
+import ghidra.program.model.data.DataTypeConflictHandler;
 import ghidra.program.model.data.DataTypeManager;
 import ghidra.program.model.data.StructureDataType;
+import ghidra.program.model.listing.Program;
 
 import com.google.gson.Gson;
 
@@ -15,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.lauriewired.util.GhidraUtils.*;
 import static com.lauriewired.util.ParseUtils.*;
 import static com.lauriewired.util.StructUtils.StructMember;
 import ghidra.program.model.data.CategoryPath;
@@ -22,7 +25,7 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 public final class CreateStruct extends Handler {
 	public CreateStruct(PluginTool tool) {
-		super("/create_struct");
+		super(tool, "/create_struct");
 	}
 
 	public void handle(HttpExchange exchange) throws IOException {
@@ -40,7 +43,7 @@ public final class CreateStruct extends Handler {
 	}
 
 	private String createStruct(String name, String category, int size, String membersJson) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 
@@ -68,7 +71,7 @@ public final class CreateStruct extends Handler {
 
 						int membersAdded = 0;
 						for (StructMember member : members) {
-							DataType memberDt = resolveDataType(dtm, member.type);
+							DataType memberDt = resolveDataType(tool, dtm, member.type);
 							if (memberDt == null) {
 								responseBuilder.append("\nError: Could not resolve data type '").append(member.type)
 										.append("' for member '").append(member.name)

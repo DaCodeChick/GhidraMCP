@@ -13,22 +13,22 @@ public final class StructUtils {
 		/**
 		 * The name of the member.
 		 */
-		String name;
+		public String name;
 
 		/**
 		 * The type of the member.
 		 */
-		String type;
+		public String type;
 
 		/**
 		 * The comment for the member.
 		 */
-		String comment;
+		public String comment;
 
 		/**
 		 * The offset of the member in the structure.
 		 * Initialized to -1 to indicate that it has not been set.
 		 */
-		double offset = -1; // Use double to handle GSON parsing number as double
+		public double offset = -1; // Use double to handle GSON parsing number as double
 	}
 }
