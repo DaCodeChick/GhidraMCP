@@ -11,24 +11,44 @@ import static com.lauriewired.util.GhidraUtils.setCommentAtAddress;
 import static com.lauriewired.util.ParseUtils.parsePostParams;
 import static com.lauriewired.util.ParseUtils.sendResponse;
 
+/**
+ * Handler for setting a comment in the disassembly at a specific address.
+ * Expects POST request with parameters: address and comment.
+ */
 public final class SetDisassemblyComment extends Handler {
-    public SetDisassemblyComment(PluginTool tool) {
-        super(tool, "/set_disassembly_comment");
-    }
+	/**
+	 * Constructor for the SetDisassemblyComment handler.
+	 *
+	 * @param tool the Ghidra PluginTool instance
+	 */
+	public SetDisassemblyComment(PluginTool tool) {
+		super(tool, "/set_disassembly_comment");
+	}
 
-    @Override
-    public void handle(HttpExchange exchange) throws Exception {
-        Map<String, String> params = parsePostParams(exchange);
-        String address = params.get("address");
-        String comment = params.get("comment");
-        boolean success = setDisassemblyComment(address, comment);
-        sendResponse(exchange, success ? "Comment set successfully" : "Failed to set comment");
-    }
+	/**
+	 * Handles the HTTP request to set a disassembly comment.
+	 * Expects a POST request with parameters: address and comment.
+	 *
+	 * @param exchange the HTTP exchange containing the request
+	 * @throws Exception if an error occurs while handling the request
+	 */
+	@Override
+	public void handle(HttpExchange exchange) throws Exception {
+		Map<String, String> params = parsePostParams(exchange);
+		String address = params.get("address");
+		String comment = params.get("comment");
+		boolean success = setDisassemblyComment(address, comment);
+		sendResponse(exchange, success ? "Comment set successfully" : "Failed to set comment");
+	}
 
-    /**
-     * Set a comment for a given address in the function disassembly
-     */
-    private boolean setDisassemblyComment(String addressStr, String comment) {
-        return setCommentAtAddress(tool, addressStr, comment, CodeUnit.EOL_COMMENT, "Set disassembly comment");
-    }
+	/**
+	 * Sets a disassembly comment at the specified address.
+	 *
+	 * @param addressStr the address as a string
+	 * @param comment    the comment to set
+	 * @return true if the comment was set successfully, false otherwise
+	 */
+	private boolean setDisassemblyComment(String addressStr, String comment) {
+		return setCommentAtAddress(tool, addressStr, comment, CodeUnit.EOL_COMMENT, "Set disassembly comment");
+	}
 }

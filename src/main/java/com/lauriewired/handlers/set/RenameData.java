@@ -21,49 +21,71 @@ import static com.lauriewired.util.ParseUtils.parsePostParams;
 import static com.lauriewired.util.ParseUtils.sendResponse;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
+/**
+ * Handler for renaming data at a specific address in the current program.
+ * Expects POST parameters: "address" (the address of the data) and "newName"
+ * (the new name).
+ */
 public final class RenameData extends Handler {
-    public RenameData(PluginTool tool) {
-        super(tool, "/renameData");
-    }
+	/**
+	 * Constructs a new RenameData handler.
+	 *
+	 * @param tool the PluginTool instance to use for program access
+	 */
+	public RenameData(PluginTool tool) {
+		super(tool, "/renameData");
+	}
 
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        Map<String, String> params = parsePostParams(exchange);
-        renameDataAtAddress(params.get("address"), params.get("newName"));
-        sendResponse(exchange, "Rename data attempted");
-    }
+	/**
+	 * Handles the HTTP request to rename data at a specified address.
+	 * Expects POST parameters "address" and "newName".
+	 *
+	 * @param exchange the HttpExchange object containing the request
+	 * @throws IOException if an I/O error occurs
+	 */
+	@Override
+	public void handle(HttpExchange exchange) throws IOException {
+		Map<String, String> params = parsePostParams(exchange);
+		renameDataAtAddress(params.get("address"), params.get("newName"));
+		sendResponse(exchange, "Rename data attempted");
+	}
 
-    private void renameDataAtAddress(String addressStr, String newName) {
-        Program program = getCurrentProgram(tool);
-        if (program == null) return;
+	/**
+	 * Renames the data at the specified address in the current program.
+	 * If the data exists, it updates its name; otherwise, it creates a new label.
+	 *
+	 * @param addressStr the address of the data as a string
+	 * @param newName    the new name for the data
+	 */
+	private void renameDataAtAddress(String addressStr, String newName) {
+		Program program = getCurrentProgram(tool);
+		if (program == null)
+			return;
 
-        try {
-            SwingUtilities.invokeAndWait(() -> {
-                int tx = program.startTransaction("Rename data");
-                try {
-                    Address addr = program.getAddressFactory().getAddress(addressStr);
-                    Listing listing = program.getListing();
-                    Data data = listing.getDefinedDataAt(addr);
-                    if (data != null) {
-                        SymbolTable symTable = program.getSymbolTable();
-                        Symbol symbol = symTable.getPrimarySymbol(addr);
-                        if (symbol != null) {
-                            symbol.setName(newName, SourceType.USER_DEFINED);
-                        } else {
-                            symTable.createLabel(addr, newName, SourceType.USER_DEFINED);
-                        }
-                    }
-                }
-                catch (Exception e) {
-                    Msg.error(this, "Rename data error", e);
-                }
-                finally {
-                    program.endTransaction(tx, true);
-                }
-            });
-        }
-        catch (InterruptedException | InvocationTargetException e) {
-            Msg.error(this, "Failed to execute rename data on Swing thread", e);
-        }
-    }
+		try {
+			SwingUtilities.invokeAndWait(() -> {
+				int tx = program.startTransaction("Rename data");
+				try {
+					Address addr = program.getAddressFactory().getAddress(addressStr);
+					Listing listing = program.getListing();
+					Data data = listing.getDefinedDataAt(addr);
+					if (data != null) {
+						SymbolTable symTable = program.getSymbolTable();
+						Symbol symbol = symTable.getPrimarySymbol(addr);
+						if (symbol != null) {
+							symbol.setName(newName, SourceType.USER_DEFINED);
+						} else {
+							symTable.createLabel(addr, newName, SourceType.USER_DEFINED);
+						}
+					}
+				} catch (Exception e) {
+					Msg.error(this, "Rename data error", e);
+				} finally {
+					program.endTransaction(tx, true);
+				}
+			});
+		} catch (InterruptedException | InvocationTargetException e) {
+			Msg.error(this, "Failed to execute rename data on Swing thread", e);
+		}
+	}
 }
