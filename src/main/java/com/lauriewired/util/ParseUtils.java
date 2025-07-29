@@ -174,4 +174,22 @@ public final class ParseUtils {
 		}
 		return sb.toString();
 	}
+
+	/**
+	 * Decode a hexadecimal string into a byte array.
+	 * 
+	 * @param hex The hexadecimal string to decode.
+	 * @return A byte array representing the decoded hexadecimal string.
+	 * @throws IllegalArgumentException If the input string is not a valid hex string.
+	 */
+	public static byte[] decodeHex(String hex) {
+		hex = hex.replaceAll("\\s+", "");
+		if (hex.length() % 2 != 0)
+			throw new IllegalArgumentException();
+		byte[] out = new byte[hex.length() / 2];
+		for (int i = 0; i < out.length; i++) {
+			out[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+		}
+		return out;
+	}
 }

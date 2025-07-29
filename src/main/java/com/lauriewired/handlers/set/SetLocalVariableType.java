@@ -24,8 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.lauriewired.util.ParseUtils.parsePostParams;
-import static com.lauriewired.util.ParseUtils.sendResponse;
+import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
