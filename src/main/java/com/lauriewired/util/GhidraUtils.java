@@ -2,6 +2,8 @@ package com.lauriewired.util;
 
 import ghidra.app.services.ProgramManager;
 import ghidra.framework.plugintool.PluginTool;
+import ghidra.program.model.data.DataType;
+import ghidra.program.model.data.DataTypeManager;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Program;
 import ghidra.util.Msg;
@@ -11,8 +13,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
+import ghidra.program.model.data.DataTypeManagerService;
+import ghidra.program.model.data.DataTypeParser;
+import ghidra.util.data.DataTypeParser.AllowedDataTypes;
 
-/** Utility class for Ghidra-related functions */
+/**
+ * Utility class for Ghidra-related operations.
+ * Provides methods to interact with the current program, resolve data types,
+ * and set comments at specific addresses.
+ */
 public final class GhidraUtils {
 	/**
 	 * Gets the current program from the specified plugin tool.
@@ -26,7 +35,52 @@ public final class GhidraUtils {
 	}
 
 	/**
-	 * Set a comment using the specified comment type (PRE_COMMENT or EOL_COMMENT)
+	 * Resolves a data type by name, handling common types and pointer types
+	 * 
+	 * @param dtm      The data type manager
+	 * @param typeName The type name to resolve
+	 * @return The resolved DataType, or null if not found
+	 */
+	public static DataType resolveDataType(DataTypeManager dtm, String typeName) {
+		DataTypeManagerService dtms = tool.getService(DataTypeManagerService.class);
+		DataTypeManager[] managers = dtms.getDataTypeManagers();
+		DataType dt = null;
+
+		List<DataTypeManager> managerList = new ArrayList<>();
+		for (DataTypeManager manager : managers) {
+			if (manager != dtm)
+				managerList.add(manager);
+		}
+		managerList.addFirst(dtm);
+
+		DataTypeParser parser = null;
+
+		for (DataTypeManager manager : managerList) {
+			try {
+				parser = new DataTypeParser(manager, null, null, AllowedDataTypes.ALL);
+				dt = parser.parse(typeName);
+				if (dt != null) {
+					return dt; // Found a successful parse, return
+				}
+			} catch (Exception e) {
+				// Continue to next manager if this one fails
+			}
+		}
+
+		// Fallback to int if we couldn't find it
+		Msg.warn(this, "Unknown type: " + typeName + ", defaulting to int");
+		return dtm.getDataType("/int");
+	}
+
+	/**
+	 * Sets a comment at the specified address in the current program.
+	 *
+	 * @param tool            the plugin tool
+	 * @param addressStr      the address as a string
+	 * @param comment         the comment to set
+	 * @param commentType     the type of comment (e.g., CodeUnit.PLATE_COMMENT)
+	 * @param transactionName the name of the transaction for logging
+	 * @return true if successful, false otherwise
 	 */
 	public static boolean setCommentAtAddress(PluginTool tool,
 			String addressStr, String comment, int commentType, String transactionName) {
