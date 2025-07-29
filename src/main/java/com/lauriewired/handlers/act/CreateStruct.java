@@ -18,18 +18,17 @@ public final class CreateStruct extends Handler {
 		super("/create_struct");
 	}
 
-	@Override
-	public void handle(HttpExchange exchange) throws IOExcep
-		, String> params = parsePostParam
-		e = params.get("name");
-		egory = params.get("category");
-		= parseIntOrDefault(params.get("size"), 0);
+	public void handle(HttpExchange exchange) throws IOException {
+		Map<String, String> params = parsePostParams(exchange);
+		String name = params.get("name");
+		String category = params.get("category");
+		long size = parseIntOrDefault(params.get("size"), 0);
+		String membersJson = params.get("members"); // Optional
 
-		
-			ll || name.isEmpty()) {
-			exchang
-		
-		 
+		if (name == null || name.isEmpty()) {
+			sendResponse(exchange, "Struct name is required");
+			return;
+		}
 		sendResponse(exchange, createStruct(name, category, (int) size, membersJson));
 	}
 
