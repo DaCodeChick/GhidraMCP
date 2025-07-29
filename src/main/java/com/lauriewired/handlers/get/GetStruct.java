@@ -7,6 +7,7 @@ import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.DataTypeComponent;
 import ghidra.program.model.data.DataTypeManager;
 import ghidra.program.model.data.Structure;
+import ghidra.program.model.listing.Program;
 
 import com.google.gson.Gson;
 

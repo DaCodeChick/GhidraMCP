@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.lauriewired.util.GhidraUtils.resolveDataType;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
@@ -174,7 +175,7 @@ public final class SetLocalVariableType extends Handler {
 
 			// Find the data type
 			DataTypeManager dtm = program.getDataTypeManager();
-			DataType dataType = resolveDataType(dtm, newType);
+			DataType dataType = resolveDataType(tool, dtm, newType);
 
 			if (dataType == null) {
 				Msg.error(this, "Could not resolve data type: " + newType);
