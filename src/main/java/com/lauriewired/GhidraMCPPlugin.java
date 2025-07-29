@@ -57,7 +57,7 @@ import java.util.*;
  * to ensure thread safety with Ghidra's event dispatch thread.
  * 
  * @author LaurieWired
- * @version 1.3.2
+ * @version 2.0
  * @since Ghidra 11.3.2
  * @see ghidra.framework.plugintool.Plugin
  * @see com.sun.net.httpserver.HttpServer

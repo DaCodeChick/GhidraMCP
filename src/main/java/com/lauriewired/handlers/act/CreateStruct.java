@@ -3,14 +3,21 @@ package com.lauriewired.handlers.act;
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
+import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.DataTypeManager;
 import ghidra.program.model.data.StructureDataType;
 
-import java.lang.reflect.InvocationTargetException;
+import com.google.gson.Gson;
+
+import javax.swing.SwingUtilities;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.lauriewired.util.ParseUtils.*;
+import static com.lauriewired.util.StructUtils.StructMember;
+import ghidra.program.model.data.CategoryPath;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 public final class CreateStruct extends Handler {
