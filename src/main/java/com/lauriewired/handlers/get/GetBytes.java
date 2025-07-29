@@ -9,6 +9,7 @@ import ghidra.program.model.listing.Program;
 import java.io.IOException;
 import java.util.*;
 
+import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**

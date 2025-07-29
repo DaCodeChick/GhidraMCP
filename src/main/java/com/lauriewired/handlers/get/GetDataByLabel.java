@@ -10,6 +10,7 @@ import ghidra.program.model.symbol.*;
 import java.io.IOException;
 import java.util.*;
 
+import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
