@@ -22,11 +22,33 @@ import static com.lauriewired.util.StructUtils.StructMember;
 import ghidra.program.model.data.CategoryPath;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
+/**
+ * Handler for adding members to a structure in Ghidra.
+ * Expects a POST request with parameters:
+ * - struct_name: Name of the structure to modify
+ * - category: Category path where the structure is located (optional)
+ * - members: JSON array of members to add, each with fields:
+ *   - type: Data type of the member
+ *   - name: Name of the member
+ *   - comment: Comment for the member (optional)
+ *   - offset: Offset in bytes (optional, -1 for next available position)
+ */
 public final class AddStructMembers extends Handler {
+	/**
+	 * Constructor for the AddStructMembers handler.
+	 *
+	 * @param tool The Ghidra plugin tool instance.
+	 */
 	public AddStructMembers(PluginTool tool) {
 		super(tool, "/add_struct_members");
 	}
 
+	/**
+	 * Handles the HTTP request to add members to a structure.
+	 *
+	 * @param exchange The HTTP exchange containing the request and response.
+	 * @throws IOException If an I/O error occurs during handling.
+	 */
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
 		Map<String, String> params = parsePostParams(exchange);
@@ -41,6 +63,14 @@ public final class AddStructMembers extends Handler {
 		sendResponse(exchange, addStructMembers(structName, category, membersJson));
 	}
 
+	/**
+	 * Adds members to a structure in the current Ghidra program.
+	 *
+	 * @param structName The name of the structure to modify.
+	 * @param category   The category path where the structure is located (optional).
+	 * @param membersJson JSON array of members to add.
+	 * @return A message indicating success or failure.
+	 */
 	private String addStructMembers(String structName, String category, String membersJson) {
 		Program program = getCurrentProgram(tool);
 		if (program == null)

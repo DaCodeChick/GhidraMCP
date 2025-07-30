@@ -23,11 +23,28 @@ import static com.lauriewired.util.StructUtils.StructMember;
 import ghidra.program.model.data.CategoryPath;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
+/**
+ * Handler for creating a new struct in Ghidra.
+ * Expects parameters: name, category (optional), size (optional), members (optional JSON array).
+ * Members should be in the format: [{"name": "member1", "type": "int", "offset": 0, "comment": "Member 1"}, ...]
+ */
 public final class CreateStruct extends Handler {
+	/**
+	 * Constructs a new CreateStruct handler.
+	 *
+	 * @param tool The PluginTool instance to interact with Ghidra.
+	 */
 	public CreateStruct(PluginTool tool) {
 		super(tool, "/create_struct");
 	}
 
+	/**
+	 * Handles the HTTP request to create a new struct.
+	 * Parses parameters from the POST request and creates the struct in Ghidra.
+	 *
+	 * @param exchange The HTTP exchange containing the request and response.
+	 * @throws IOException If an I/O error occurs during handling.
+	 */
 	public void handle(HttpExchange exchange) throws IOException {
 		Map<String, String> params = parsePostParams(exchange);
 		String name = params.get("name");
@@ -42,6 +59,16 @@ public final class CreateStruct extends Handler {
 		sendResponse(exchange, createStruct(name, category, (int) size, membersJson));
 	}
 
+	/**
+	 * Creates a new struct in Ghidra with the specified parameters.
+	 * This method runs on the Swing thread to ensure thread safety when interacting with Ghidra's data types.
+	 *
+	 * @param name        The name of the struct to create.
+	 * @param category    The category path where the struct will be created (optional).
+	 * @param size        The size of the struct (optional, defaults to 0).
+	 * @param membersJson JSON array of struct members (optional).
+	 * @return A message indicating success or failure of the operation.
+	 */
 	private String createStruct(String name, String category, int size, String membersJson) {
 		Program program = getCurrentProgram(tool);
 		if (program == null)
