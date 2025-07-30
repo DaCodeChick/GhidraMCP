@@ -21,7 +21,7 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
  * Exports are symbols that are external entry points, typically functions.
  * 
  * Example usage:
- * GET /imports?offset=0&limit=100
+ * GET /exports?offset=0&limit=100
  */
 public final class ListExports extends Handler {
 	/**
@@ -30,7 +30,7 @@ public final class ListExports extends Handler {
 	 * @param tool the PluginTool instance to interact with Ghidra
 	 */
 	public ListExports(PluginTool tool) {
-		super(tool, "/imports");
+		super(tool, "/exports");
 	}
 
 	/**
