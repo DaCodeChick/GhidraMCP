@@ -67,7 +67,7 @@ public final class GetDataByLabel extends Handler {
 			Symbol s = it.next();
 			Address a = s.getAddress();
 			Data d = program.getListing().getDefinedDataAt(a);
-			String v = (d != null) ? escapeNonAscii(String.valueOf(d.getDefaultValueRepresentation()))
+			String v = (d != null) ? escapeString(String.valueOf(d.getDefaultValueRepresentation()))
 					: "(no defined data)";
 			sb.append(String.format("%s -> %s : %s%n", label, a, v));
 		}

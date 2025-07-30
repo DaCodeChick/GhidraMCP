@@ -140,6 +140,34 @@ public final class ParseUtils {
 	}
 
 	/**
+	 * Escape special characters in a string for safe display
+	 * 
+	 * @param input the string to escape
+	 * @return the escaped string
+	 */
+	public static String escapeString(String input) {
+		if (input == null)
+			return "";
+
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < input.length(); i++) {
+			char c = input.charAt(i);
+			if (c >= 32 && c < 127) {
+				sb.append(c);
+			} else if (c == '\n') {
+				sb.append("\\n");
+			} else if (c == '\r') {
+				sb.append("\\r");
+			} else if (c == '\t') {
+				sb.append("\\t");
+			} else {
+				sb.append(String.format("\\x%02x", (int) c & 0xFF));
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
 	 * Send a plain text response to the HTTP exchange.
 	 * 
 	 * @param exchange The HttpExchange object to send the response to.
@@ -180,7 +208,8 @@ public final class ParseUtils {
 	 * 
 	 * @param hex The hexadecimal string to decode.
 	 * @return A byte array representing the decoded hexadecimal string.
-	 * @throws IllegalArgumentException If the input string is not a valid hex string.
+	 * @throws IllegalArgumentException If the input string is not a valid hex
+	 *                                  string.
 	 */
 	public static byte[] decodeHex(String hex) {
 		hex = hex.replaceAll("\\s+", "");
