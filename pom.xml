@@ -69,6 +69,12 @@
       <systemPath>${project.basedir}/lib/Gui.jar</systemPath>
     </dependency>
 
+	<dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>0.10.2</version>
+    </dependency>
+
     <!-- JUnit (test only) -->
     <dependency>
       <groupId>junit</groupId>
@@ -85,6 +91,12 @@
     </dependency>
   </dependencies>
 
+  <properties>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <build>
     <plugins>
       <!-- Configure Java version for compatibility -->
@@ -93,12 +105,36 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
         <configuration>
-          <source>8</source>
-          <target>8</target>
+          <source>21</source>
+          <target>21</target>
           <compilerArgs>
             <arg>-Xlint:-options</arg>
           </compilerArgs>
         </configuration>
+      </plugin>
+
+	  <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <finalName>GhidraMCP</finalName>
+
+              <!-- Only excludes Ghidra jars -->
+              <artifactSet>
+                <excludes>
+                  <exclude>ghidra:*</exclude>
+                </excludes>
+              </artifactSet>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       
       <!-- Use custom MANIFEST.MF -->
