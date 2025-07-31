@@ -434,6 +434,21 @@ def search_bytes(bytes_hex: str, offset: int = 0, limit: int = 100) -> list:
         {"bytes": bytes_hex, "offset": offset, "limit": limit},
     )
 
+@mcp.tool()
+def set_bytes(address: str, bytes_hex: str) -> str:
+    """
+    Writes a sequence of bytes to the specified address in the program's memory.
+
+    Args:
+        address: Destination address (e.g., "0x140001000")
+        bytes_hex: Sequence of space-separated bytes in hexadecimal format (e.g., "90 90 90 90")
+
+    Returns:
+        Result of the operation (e.g., "Bytes written successfully" or a detailed error)
+    """
+    return safe_post("set_bytes", {"address": address, "bytes": bytes_hex})
+
+
 def main():
     parser = argparse.ArgumentParser(description="MCP server for Ghidra")
     parser.add_argument("--ghidra-server", type=str, default=DEFAULT_GHIDRA_SERVER,
