@@ -8,7 +8,7 @@ import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.DataTypeManager;
 import ghidra.program.model.data.DataUtilities;
 import ghidra.program.model.data.DataUtilities.ClearDataMode;
-import ghidra.program.model.listing.CodeUnitInsertionException;
+import ghidra.program.model.util.CodeUnitInsertionException;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
 import ghidra.util.Msg;
