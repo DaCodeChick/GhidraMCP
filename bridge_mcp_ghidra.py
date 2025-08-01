@@ -533,27 +533,45 @@ def set_global_data_type(address: str, data_type: str, length: int = -1, clear_m
     return safe_post("set_global_data_type", data)
 
 @mcp.tool()
-def create_class(name: str, parent_namespace: str = None, members: list = None) -> str:
+def add_class_members(class_name: str, members: list, parent_namespace: str = None) -> str:
     """
-    Create a new C++ class with both namespace and structure.
+    Add members to an existing C++ class.
     
     Args:
-        name: The name of the new class.
-        parent_namespace: The parent namespace for the class (optional, defaults to global).
-        members: A list of member dictionaries to add to the class structure.
+        class_name: The name of the class to modify.
+        members: A list of member dictionaries to add to the class.
                 Each dict should have 'name', 'type', and optionally 'offset' and 'comment'.
-                Example: [{"name": "x", "type": "int", "offset": 0, "comment": "X coordinate"}]
+                Example: [{"name": "health", "type": "float", "comment": "Player health"}]
+        parent_namespace: The parent namespace where the class is located (optional).
                 
     Returns:
         A status message indicating success or failure.
     """
-    params = {"name": name}
+    params = {"class_name": class_name, "members": json.dumps(members)}
     if parent_namespace:
         params["parent_namespace"] = parent_namespace
-    if members:
-        params["members"] = json.dumps(members)
 
-    return safe_post("create_class", params)
+    return safe_post("add_class_members", params)
+
+@mcp.tool()
+def remove_class_members(class_name: str, members: list, parent_namespace: str = None) -> str:
+    """
+    Remove members from an existing C++ class.
+    
+    Args:
+        class_name: The name of the class to modify.
+        members: A list of member names to remove from the class.
+                Example: ["old_member", "unused_field"]
+        parent_namespace: The parent namespace where the class is located (optional).
+                
+    Returns:
+        A status message indicating success or failure.
+    """
+    params = {"class_name": class_name, "members": json.dumps(members)}
+    if parent_namespace:
+        params["parent_namespace"] = parent_namespace
+
+    return safe_post("remove_class_members", params)
 
 def main():
     parser = argparse.ArgumentParser(description="MCP server for Ghidra")
