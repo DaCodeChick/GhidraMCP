@@ -532,6 +532,29 @@ def set_global_data_type(address: str, data_type: str, length: int = -1, clear_m
     
     return safe_post("set_global_data_type", data)
 
+@mcp.tool()
+def create_class(name: str, parent_namespace: str = None, members: list = None) -> str:
+    """
+    Create a new C++ class with both namespace and structure.
+    
+    Args:
+        name: The name of the new class.
+        parent_namespace: The parent namespace for the class (optional, defaults to global).
+        members: A list of member dictionaries to add to the class structure.
+                Each dict should have 'name', 'type', and optionally 'offset' and 'comment'.
+                Example: [{"name": "x", "type": "int", "offset": 0, "comment": "X coordinate"}]
+                
+    Returns:
+        A status message indicating success or failure.
+    """
+    params = {"name": name}
+    if parent_namespace:
+        params["parent_namespace"] = parent_namespace
+    if members:
+        params["members"] = json.dumps(members)
+
+    return safe_post("create_class", params)
+
 def main():
     parser = argparse.ArgumentParser(description="MCP server for Ghidra")
     parser.add_argument("--ghidra-server", type=str, default=DEFAULT_GHIDRA_SERVER,
