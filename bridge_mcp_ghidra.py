@@ -503,6 +503,35 @@ def get_enum(name: str, category: str = None) -> dict:
         # If it's not JSON, it's likely an error message
         return {"error": response_str}
 
+@mcp.tool()
+def set_global_data_type(address: str, data_type: str, length: int = -1, clear_mode: str = "CHECK_FOR_SPACE") -> str:
+    """
+    Set the data type of a global variable or data at a specific memory address.
+    
+    Args:
+        address: The memory address in hex format (e.g., "0x401000")
+        data_type: The name of the data type to apply (e.g., "int", "char*", "MyStruct")
+        length: Optional length for dynamic data types (default: -1, let type determine)
+        clear_mode: How to handle conflicting data. Options:
+                   - "CHECK_FOR_SPACE": Ensure data fits before clearing (default)
+                   - "CLEAR_SINGLE_DATA": Always clear single code unit at address
+                   - "CLEAR_ALL_UNDEFINED_CONFLICT_DATA": Clear conflicting undefined data
+                   - "CLEAR_ALL_DEFAULT_CONFLICT_DATA": Clear conflicting default data
+                   - "CLEAR_ALL_CONFLICT_DATA": Clear all conflicting data
+                   
+    Returns:
+        A status message indicating success or failure.
+    """
+    data = {
+        "address": address,
+        "data_type": data_type,
+        "clear_mode": clear_mode
+    }
+    if length > 0:
+        data["length"] = str(length)
+    
+    return safe_post("set_global_data_type", data)
+
 def main():
     parser = argparse.ArgumentParser(description="MCP server for Ghidra")
     parser.add_argument("--ghidra-server", type=str, default=DEFAULT_GHIDRA_SERVER,
