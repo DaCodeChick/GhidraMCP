@@ -9,7 +9,9 @@ import ghidra.program.model.data.Structure;
 import ghidra.program.model.listing.GhidraClass;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Namespace;
+import ghidra.program.model.symbol.Symbol;
 import ghidra.program.model.symbol.SymbolTable;
+import ghidra.program.model.symbol.SymbolType;
 import ghidra.program.database.data.DataTypeUtilities;
 
 import com.google.gson.Gson;
@@ -90,7 +92,7 @@ public final class AddClassMembers extends Handler {
 					DataTypeManager dtm = program.getDataTypeManager();
 
 					// Find the class namespace
-					Namespace parent = null;
+					Namespace parent = program.getGlobalNamespace();
 					if (parentNamespace != null && !parentNamespace.isEmpty()) {
 						parent = symbolTable.getNamespace(parentNamespace, program.getGlobalNamespace());
 						if (parent == null) {
@@ -99,16 +101,12 @@ public final class AddClassMembers extends Handler {
 						}
 					}
 
+					// Find the class by iterating through symbols
 					GhidraClass classNamespace = null;
-					for (Namespace ns : symbolTable.getNamespaces()) {
-						if (ns instanceof GhidraClass && ns.getName().equals(className)) {
-							if (parent == null && ns.getParentNamespace().isGlobal()) {
-								classNamespace = (GhidraClass) ns;
-								break;
-							} else if (parent != null && ns.getParentNamespace().equals(parent)) {
-								classNamespace = (GhidraClass) ns;
-								break;
-							}
+					for (Symbol symbol : symbolTable.getSymbols(className, parent)) {
+						if (symbol.getSymbolType() == SymbolType.CLASS) {
+							classNamespace = (GhidraClass) symbol.getObject();
+							break;
 						}
 					}
 
@@ -143,7 +141,14 @@ public final class AddClassMembers extends Handler {
 							}
 
 							// Check if member already exists
-							if (classStruct.getComponentByName(member.name) != null) {
+							DataTypeComponent existingComponent = null;
+							for (DataTypeComponent comp : classStruct.getComponents()) {
+								if (comp.getFieldName() != null && comp.getFieldName().equals(member.name)) {
+									existingComponent = comp;
+									break;
+								}
+							}
+							if (existingComponent != null) {
 								responseBuilder.append("\nWarning: Member '").append(member.name)
 										.append("' already exists. Skipping.");
 								continue;

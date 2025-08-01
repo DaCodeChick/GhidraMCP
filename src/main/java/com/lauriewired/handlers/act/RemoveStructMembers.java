@@ -3,16 +3,11 @@ package com.lauriewired.handlers.act;
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
+import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.DataTypeManager;
 import ghidra.program.model.data.Structure;
 import ghidra.program.model.data.DataTypeComponent;
-import ghidra.program.model.listing.GhidraClass;
 import ghidra.program.model.listing.Program;
-import ghidra.program.model.symbol.Namespace;
-import ghidra.program.model.symbol.Symbol;
-import ghidra.program.model.symbol.SymbolTable;
-import ghidra.program.model.symbol.SymbolType;
-import ghidra.program.database.data.DataTypeUtilities;
 
 import com.google.gson.Gson;
 
@@ -23,28 +18,28 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.lauriewired.util.ParseUtils.*;
+import ghidra.program.model.data.CategoryPath;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
- * Handler for removing members from a C++ class in Ghidra.
- * This modifies the class's associated structure data type.
+ * Handler for removing members from a structure in Ghidra.
  * Expects a POST request with parameters:
- * - class_name: Name of the class to modify
- * - parent_namespace: Parent namespace where the class is located (optional)
+ * - struct_name: Name of the structure to modify
+ * - category: Category path where the structure is located (optional)
  * - members: JSON array of member names to remove, or single member name as string
  */
-public final class RemoveClassMembers extends Handler {
+public final class RemoveStructMembers extends Handler {
 	/**
-	 * Constructor for the RemoveClassMembers handler.
+	 * Constructor for the RemoveStructMembers handler.
 	 *
 	 * @param tool The Ghidra plugin tool instance.
 	 */
-	public RemoveClassMembers(PluginTool tool) {
-		super(tool, "/remove_class_members");
+	public RemoveStructMembers(PluginTool tool) {
+		super(tool, "/remove_struct_members");
 	}
 
 	/**
-	 * Handles the HTTP request to remove members from a class.
+	 * Handles the HTTP request to remove members from a structure.
 	 *
 	 * @param exchange The HTTP exchange containing the request and response.
 	 * @throws IOException If an I/O error occurs during handling.
@@ -52,26 +47,26 @@ public final class RemoveClassMembers extends Handler {
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
 		Map<String, String> params = parsePostParams(exchange);
-		String className = params.get("class_name");
-		String parentNamespace = params.get("parent_namespace");
+		String structName = params.get("struct_name");
+		String category = params.get("category");
 		String membersParam = params.get("members");
 
-		if (className == null || membersParam == null) {
-			sendResponse(exchange, "class_name and members are required");
+		if (structName == null || membersParam == null) {
+			sendResponse(exchange, "struct_name and members are required");
 			return;
 		}
-		sendResponse(exchange, removeClassMembers(className, parentNamespace, membersParam));
+		sendResponse(exchange, removeStructMembers(structName, category, membersParam));
 	}
 
 	/**
-	 * Removes members from a class in the current Ghidra program.
+	 * Removes members from a structure in the current Ghidra program.
 	 *
-	 * @param className The name of the class to modify.
-	 * @param parentNamespace The parent namespace where the class is located (optional).
+	 * @param structName The name of the structure to modify.
+	 * @param category The category path where the structure is located (optional).
 	 * @param membersParam JSON array of member names to remove, or single member name.
 	 * @return A message indicating success or failure.
 	 */
-	private String removeClassMembers(String className, String parentNamespace, String membersParam) {
+	private String removeStructMembers(String structName, String category, String membersParam) {
 		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
@@ -79,46 +74,21 @@ public final class RemoveClassMembers extends Handler {
 		final AtomicReference<String> result = new AtomicReference<>();
 		try {
 			SwingUtilities.invokeAndWait(() -> {
-				int txId = program.startTransaction("Remove Class Members");
+				int txId = program.startTransaction("Remove Struct Members");
 				boolean success = false;
 				try {
-					SymbolTable symbolTable = program.getSymbolTable();
 					DataTypeManager dtm = program.getDataTypeManager();
+					CategoryPath path = new CategoryPath(category == null ? "/" : category);
+					DataType dt = dtm.getDataType(path, structName);
 
-					// Find the class namespace
-					Namespace parent = program.getGlobalNamespace();
-					if (parentNamespace != null && !parentNamespace.isEmpty()) {
-						parent = symbolTable.getNamespace(parentNamespace, program.getGlobalNamespace());
-						if (parent == null) {
-							result.set("Error: Parent namespace '" + parentNamespace + "' not found");
-							return;
-						}
-					}
-
-					// Find the class by iterating through symbols
-					GhidraClass classNamespace = null;
-					for (Symbol symbol : symbolTable.getSymbols(className, parent)) {
-						if (symbol.getSymbolType() == SymbolType.CLASS) {
-							classNamespace = (GhidraClass) symbol.getObject();
-							break;
-						}
-					}
-
-					if (classNamespace == null) {
-						result.set("Error: Class '" + className + "' not found" + 
-								(parent != null ? " in namespace " + parent.getName() : ""));
+					if (dt == null || !(dt instanceof Structure)) {
+						result.set("Error: Struct " + structName + " not found in category " + path);
 						return;
 					}
-
-					// Find the associated structure
-					Structure classStruct = DataTypeUtilities.findExistingClassStruct(dtm, classNamespace);
-					if (classStruct == null) {
-						result.set("Error: No structure found for class '" + className + "'");
-						return;
-					}
+					Structure struct = (Structure) dt;
 
 					StringBuilder responseBuilder = new StringBuilder(
-							"Removing members from class " + className);
+							"Removing members from struct " + structName);
 
 					// Parse member names to remove
 					List<String> memberNames = new ArrayList<>();
@@ -135,7 +105,7 @@ public final class RemoveClassMembers extends Handler {
 					int membersRemoved = 0;
 					for (String memberName : memberNames) {
 						DataTypeComponent component = null;
-						for (DataTypeComponent comp : classStruct.getComponents()) {
+						for (DataTypeComponent comp : struct.getComponents()) {
 							if (comp.getFieldName() != null && comp.getFieldName().equals(memberName)) {
 								component = comp;
 								break;
@@ -144,12 +114,12 @@ public final class RemoveClassMembers extends Handler {
 						
 						if (component == null) {
 							responseBuilder.append("\nWarning: Member '").append(memberName)
-									.append("' not found in class. Skipping.");
+									.append("' not found in struct. Skipping.");
 							continue;
 						}
 
 						int ordinal = component.getOrdinal();
-						classStruct.delete(ordinal);
+						struct.delete(ordinal);
 						responseBuilder.append("\nRemoved member '").append(memberName)
 								.append("' (ordinal ").append(ordinal).append(")");
 						membersRemoved++;
@@ -157,22 +127,22 @@ public final class RemoveClassMembers extends Handler {
 
 					if (membersRemoved > 0) {
 						responseBuilder.append("\nSuccessfully removed ").append(membersRemoved)
-								.append(" members from class ").append(className);
+								.append(" members from struct ").append(structName);
 						success = true;
 					} else {
-						responseBuilder.append("\nNo members were removed from class ").append(className);
+						responseBuilder.append("\nNo members were removed from struct ").append(structName);
 					}
 
 					result.set(responseBuilder.toString());
 
 				} catch (Exception e) {
-					result.set("Error: Failed to remove members from class: " + e.getMessage());
+					result.set("Error: Failed to remove members from struct: " + e.getMessage());
 				} finally {
 					program.endTransaction(txId, success);
 				}
 			});
 		} catch (InterruptedException | InvocationTargetException e) {
-			return "Error: Failed to execute remove class members on Swing thread: " + e.getMessage();
+			return "Error: Failed to execute remove struct members on Swing thread: " + e.getMessage();
 		}
 		return result.get();
 	}

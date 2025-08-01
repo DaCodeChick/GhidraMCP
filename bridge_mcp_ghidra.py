@@ -573,6 +573,46 @@ def remove_class_members(class_name: str, members: list, parent_namespace: str =
 
     return safe_post("remove_class_members", params)
 
+@mcp.tool()
+def remove_enum_values(enum_name: str, values: list, category: str = None) -> str:
+    """
+    Remove values from an existing enum.
+    
+    Args:
+        enum_name: The name of the enum to modify.
+        values: A list of value names to remove from the enum.
+                Example: ["OLD_VALUE", "DEPRECATED_OPTION"]
+        category: The category path for the enum (optional, defaults to root).
+                
+    Returns:
+        A status message indicating success or failure.
+    """
+    params = {"enum_name": enum_name, "values": json.dumps(values)}
+    if category:
+        params["category"] = category
+
+    return safe_post("remove_enum_values", params)
+
+@mcp.tool()
+def remove_struct_members(struct_name: str, members: list, category: str = None) -> str:
+    """
+    Remove members from an existing struct.
+    
+    Args:
+        struct_name: The name of the struct to modify.
+        members: A list of member names to remove from the struct.
+                Example: ["old_field", "unused_member"]
+        category: The category path for the struct (optional, defaults to root).
+                
+    Returns:
+        A status message indicating success or failure.
+    """
+    params = {"struct_name": struct_name, "members": json.dumps(members)}
+    if category:
+        params["category"] = category
+
+    return safe_post("remove_struct_members", params)
+
 def main():
     parser = argparse.ArgumentParser(description="MCP server for Ghidra")
     parser.add_argument("--ghidra-server", type=str, default=DEFAULT_GHIDRA_SERVER,
