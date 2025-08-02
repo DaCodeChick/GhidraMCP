@@ -435,19 +435,183 @@ def search_bytes(bytes_hex: str, offset: int = 0, limit: int = 100) -> list:
     )
 
 @mcp.tool()
-def set_bytes(address: str, bytes_hex: str) -> str:
+def create_enum(name: str, category: str = None, size: int = 4, values: list = None) -> str:
     """
-    Writes a sequence of bytes to the specified address in the program's memory.
-
+    Create a new enum.
+    
     Args:
-        address: Destination address (e.g., "0x140001000")
-        bytes_hex: Sequence of space-separated bytes in hexadecimal format (e.g., "90 90 90 90")
-
+        name: The name of the new enum.
+        category: The category path for the enum (e.g., /my_enums). Defaults to root.
+        size: The size of the enum in bytes (default: 4).
+        values: A list of value dictionaries to add to the new enum.
+                Each dict should have 'name', 'value', and optionally 'comment'.
+                Example: [{"name": "VALUE1", "value": 0, "comment": "First value"}]
+                
     Returns:
-        Result of the operation (e.g., "Bytes written successfully" or a detailed error)
+        A status message indicating success or failure.
     """
-    return safe_post("set_bytes", {"address": address, "bytes": bytes_hex})
+    data = {"name": name, "size": str(size)}
+    if category:
+        data["category"] = category
+    if values:
+        data["values"] = json.dumps(values)
+    return safe_post("create_enum", data)
 
+@mcp.tool()
+def add_enum_values(enum_name: str, values: list, category: str = None) -> str:
+    """
+    Add values to an existing enum.
+    
+    Args:
+        enum_name: The name of the enum to modify.
+        values: A list of value dictionaries to add to the enum.
+                Each dict should have 'name', 'value', and optionally 'comment'.
+                Example: [{"name": "VALUE1", "value": 0, "comment": "First value"}]
+        category: The category path for the enum. Defaults to root.
+        
+    Returns:
+        A status message indicating success or failure.
+    """
+    data = {"enum_name": enum_name, "values": json.dumps(values)}
+    if category:
+        data["category"] = category
+    return safe_post("add_enum_values", data)
+
+@mcp.tool()
+def get_enum(name: str, category: str = None) -> dict:
+    """
+    Get an enum's definition.
+    
+    Args:
+        name: The name of the enum.
+        category: The category path for the enum. Defaults to root.
+        
+    Returns:
+        A dictionary representing the enum, or an error message.
+    """
+    params = {"name": name}
+    if category:
+        params["category"] = category
+
+    response_lines = safe_get("get_enum", params)
+    response_str = "\n".join(response_lines)
+
+    try:
+        # Attempt to parse the JSON response
+        return json.loads(response_str)
+    except json.JSONDecodeError:
+        # If it's not JSON, it's likely an error message
+        return {"error": response_str}
+
+@mcp.tool()
+def set_global_data_type(address: str, data_type: str, length: int = -1, clear_mode: str = "CHECK_FOR_SPACE") -> str:
+    """
+    Set the data type of a global variable or data at a specific memory address.
+    
+    Args:
+        address: The memory address in hex format (e.g., "0x401000")
+        data_type: The name of the data type to apply (e.g., "int", "char*", "MyStruct")
+        length: Optional length for dynamic data types (default: -1, let type determine)
+        clear_mode: How to handle conflicting data. Options:
+                   - "CHECK_FOR_SPACE": Ensure data fits before clearing (default)
+                   - "CLEAR_SINGLE_DATA": Always clear single code unit at address
+                   - "CLEAR_ALL_UNDEFINED_CONFLICT_DATA": Clear conflicting undefined data
+                   - "CLEAR_ALL_DEFAULT_CONFLICT_DATA": Clear conflicting default data
+                   - "CLEAR_ALL_CONFLICT_DATA": Clear all conflicting data
+                   
+    Returns:
+        A status message indicating success or failure.
+    """
+    data = {
+        "address": address,
+        "data_type": data_type,
+        "clear_mode": clear_mode
+    }
+    if length > 0:
+        data["length"] = str(length)
+    
+    return safe_post("set_global_data_type", data)
+
+@mcp.tool()
+def add_class_members(class_name: str, members: list, parent_namespace: str = None) -> str:
+    """
+    Add members to an existing C++ class.
+    
+    Args:
+        class_name: The name of the class to modify.
+        members: A list of member dictionaries to add to the class.
+                Each dict should have 'name', 'type', and optionally 'offset' and 'comment'.
+                Example: [{"name": "health", "type": "float", "comment": "Player health"}]
+        parent_namespace: The parent namespace where the class is located (optional).
+                
+    Returns:
+        A status message indicating success or failure.
+    """
+    params = {"class_name": class_name, "members": json.dumps(members)}
+    if parent_namespace:
+        params["parent_namespace"] = parent_namespace
+
+    return safe_post("add_class_members", params)
+
+@mcp.tool()
+def remove_class_members(class_name: str, members: list, parent_namespace: str = None) -> str:
+    """
+    Remove members from an existing C++ class.
+    
+    Args:
+        class_name: The name of the class to modify.
+        members: A list of member names to remove from the class.
+                Example: ["old_member", "unused_field"]
+        parent_namespace: The parent namespace where the class is located (optional).
+                
+    Returns:
+        A status message indicating success or failure.
+    """
+    params = {"class_name": class_name, "members": json.dumps(members)}
+    if parent_namespace:
+        params["parent_namespace"] = parent_namespace
+
+    return safe_post("remove_class_members", params)
+
+@mcp.tool()
+def remove_enum_values(enum_name: str, values: list, category: str = None) -> str:
+    """
+    Remove values from an existing enum.
+    
+    Args:
+        enum_name: The name of the enum to modify.
+        values: A list of value names to remove from the enum.
+                Example: ["OLD_VALUE", "DEPRECATED_OPTION"]
+        category: The category path for the enum (optional, defaults to root).
+                
+    Returns:
+        A status message indicating success or failure.
+    """
+    params = {"enum_name": enum_name, "values": json.dumps(values)}
+    if category:
+        params["category"] = category
+
+    return safe_post("remove_enum_values", params)
+
+@mcp.tool()
+def remove_struct_members(struct_name: str, members: list, category: str = None) -> str:
+    """
+    Remove members from an existing struct.
+    
+    Args:
+        struct_name: The name of the struct to modify.
+        members: A list of member names to remove from the struct.
+                Example: ["old_field", "unused_member"]
+        category: The category path for the struct (optional, defaults to root).
+                
+    Returns:
+        A status message indicating success or failure.
+    """
+    params = {"struct_name": struct_name, "members": json.dumps(members)}
+    if category:
+        params["category"] = category
+
+    return safe_post("remove_struct_members", params)
 
 def main():
     parser = argparse.ArgumentParser(description="MCP server for Ghidra")
