@@ -1,10 +1,10 @@
 [![MseeP.ai Security Assessment Badge](https://mseep.net/mseep-audited.png)](https://mseep.ai/app/lauriewired-ghidramcp)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/LaurieWired/GhidraMCP)](https://github.com/LaurieWired/GhidraMCP/releases)
-[![GitHub stars](https://img.shields.io/github/stars/LaurieWired/GhidraMCP)](https://github.com/LaurieWired/GhidraMCP/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/LaurieWired/GhidraMCP)](https://github.com/LaurieWired/GhidraMCP/network/members)
-[![GitHub contributors](https://img.shields.io/github/contributors/LaurieWired/GhidraMCP)](https://github.com/LaurieWired/GhidraMCP/graphs/contributors)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/DaCodeChick/GhidraMCP)](https://github.com/DaCodeChick/GhidraMCP/releases)
+[![GitHub stars](https://img.shields.io/github/stars/DaCodeChick/GhidraMCP)](https://github.com/DaCodeChick/GhidraMCP/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/DaCodeChick/GhidraMCP)](https://github.com/DaCodeChick/GhidraMCP/network/members)
+[![GitHub contributors](https://img.shields.io/github/contributors/DaCodeChick/GhidraMCP)](https://github.com/DaCodeChick/GhidraMCP/graphs/contributors)
 [![Follow @lauriewired](https://img.shields.io/twitter/follow/lauriewired?style=social)](https://twitter.com/lauriewired)
 
 ![ghidra_MCP_logo](https://github.com/user-attachments/assets/4986d702-be3f-4697-acce-aea55cd79ad3)
@@ -27,10 +27,10 @@ MCP Server + Ghidra Plugin
 
 ### Installing via Smithery
 
-To install GhidraMCP for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@LaurieWired/GhidraMCP):
+To install GhidraMCP for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@DaCodeChick/GhidraMCP):
 
 ```bash
-npx -y @smithery/cli install @LaurieWired/GhidraMCP --client claude
+npx -y @smithery/cli install @DaCodeChick/GhidraMCP --client claude
 ```
 
 ## Prerequisites
@@ -39,7 +39,7 @@ npx -y @smithery/cli install @LaurieWired/GhidraMCP --client claude
 - MCP [SDK](https://github.com/modelcontextprotocol/python-sdk)
 
 ## Ghidra
-First, download the latest [release](https://github.com/LaurieWired/GhidraMCP/releases) from this repository. This contains the Ghidra plugin and Python MCP client. Then, you can directly import the plugin into Ghidra.
+First, download the latest [release](https://github.com/DaCodeChick/GhidraMCP/releases) from this repository. This contains the Ghidra plugin and Python MCP client. Then, you can directly import the plugin into Ghidra.
 
 ### Plugin Installation
 1. Run Ghidra
