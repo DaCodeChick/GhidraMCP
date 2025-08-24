@@ -627,6 +627,19 @@ def set_bytes(address: str, bytes_hex: str) -> str:
     """
     return safe_post("set_bytes", {"address": address, "bytes": bytes_hex})
 
+@mcp.tool()
+def get_callee(address: str) -> list:
+    """
+    Get the functions called by the function at the specified address.
+    
+    Args:
+        address: The address within the function.
+        
+    Returns:
+        A list of called functions.
+    """
+    return safe_get("get_callee", {"address": address})
+
 def main():
     parser = argparse.ArgumentParser(description="MCP server for Ghidra")
     parser.add_argument("--ghidra-server", type=str, default=DEFAULT_GHIDRA_SERVER,
