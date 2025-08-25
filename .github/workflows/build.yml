@@ -28,7 +28,7 @@ jobs:
         7z x -bd ghidra.zip
 
     - name: Build with Gradle
-      run: ./gradle build
+      run: gradle
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
