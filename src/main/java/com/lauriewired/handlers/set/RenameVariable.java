@@ -40,7 +40,7 @@ public final class RenameVariable extends Handler {
 	 * @param tool the PluginTool instance
 	 */
 	public RenameVariable(PluginTool tool) {
-		super(tool, "/renameVariable");
+		super(tool, "/rename_variable", "/renameVariable");
 	}
 
 	/**

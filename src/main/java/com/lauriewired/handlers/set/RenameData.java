@@ -33,7 +33,7 @@ public final class RenameData extends Handler {
 	 * @param tool the PluginTool instance to use for program access
 	 */
 	public RenameData(PluginTool tool) {
-		super(tool, "/renameData");
+		super(tool, "/rename_data", "/renameData");
 	}
 
 	/**

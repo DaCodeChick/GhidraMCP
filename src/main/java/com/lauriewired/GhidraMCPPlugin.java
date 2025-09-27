@@ -216,11 +216,14 @@ public class GhidraMCPPlugin extends Plugin {
 			try {
 				Constructor<?> constructor = clazz.getConstructor(PluginTool.class);
 				Handler handler = (Handler) constructor.newInstance(tool);
-				if (routes.containsKey(handler.getPath())) {
-					Msg.error(this, "Handler class " + clazz.getName() + " already registered, skipped.");
-					continue;
+				String[] paths = handler.getPaths();
+				for (String path : paths) {
+					if (routes.containsKey(path)) {
+						Msg.error(this, "Handler class " + clazz.getName() + " already registered for path " + path + ", skipped.");
+						continue;
+					}
+					routes.put(path, handler);
 				}
-				routes.put(handler.getPath(), handler);
 				server.createContext(handler.getPath(), exchange -> {
 					try {
 						handler.handle(exchange);

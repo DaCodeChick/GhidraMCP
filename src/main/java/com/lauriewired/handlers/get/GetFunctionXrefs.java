@@ -23,8 +23,13 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
  * Expects query parameters: name, offset, limit
  */
 public final class GetFunctionXrefs extends Handler {
+	/**
+	 * Constructs the handler with the specified plugin tool.
+	 * 
+	 * @param tool the plugin tool instance
+	 */
 	public GetFunctionXrefs(PluginTool tool) {
-		super(tool, "/function_xrefs");
+		super(tool, "/function_xrefs", "/get_function_xrefs");
 	}
 
 	/**

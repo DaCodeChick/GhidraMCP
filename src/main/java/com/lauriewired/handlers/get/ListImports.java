@@ -26,7 +26,7 @@ public final class ListImports extends Handler {
 	 * @param tool the PluginTool instance to use for accessing the current program.
 	 */
 	public ListImports(PluginTool tool) {
-		super(tool, "/imports");
+		super(tool, "/imports", "/list_imports");
 	}
 
 	/**

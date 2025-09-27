@@ -18,6 +18,11 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
  * Handler to get function details by address
  */
 public final class GetFunctionByAddress extends Handler {
+	/**
+	 * Constructor
+	 *
+	 * @param tool the plugin tool
+	 */
 	public GetFunctionByAddress(PluginTool tool) {
 		super(tool, "/get_function_by_address");
 	}
