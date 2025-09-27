@@ -53,8 +53,8 @@ public final class GetEnum extends Handler {
 	 * Retrieves the enum details as a JSON string.
 	 *
 	 * @param enumName the name of the enum to retrieve.
-	 * @param category   the category path where the enum is located
-	 *                   (optional).
+	 * @param category the category path where the enum is located
+	 *                 (optional).
 	 * @return a JSON representation of the enum or an error message if not
 	 *         found.
 	 */
@@ -84,7 +84,7 @@ public final class GetEnum extends Handler {
 		List<Map<String, Object>> valuesList = new ArrayList<>();
 		String[] names = enumDt.getNames();
 		long[] values = enumDt.getValues();
-		
+
 		// Create a map for quick lookup of values by name
 		Map<String, Long> nameToValue = new HashMap<>();
 		for (int i = 0; i < names.length; i++) {

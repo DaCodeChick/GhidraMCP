@@ -24,14 +24,17 @@ import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
- * Handler for setting the data type of a global variable or data at a specific address.
- * This handler allows users to specify an address and the new data type they want to apply,
+ * Handler for setting the data type of a global variable or data at a specific
+ * address.
+ * This handler allows users to specify an address and the new data type they
+ * want to apply,
  * effectively creating typed data at memory locations.
  * 
  * Expects POST parameters:
  * - address: The memory address where to set the data type
  * - data_type: The name of the data type to apply
- * - length: Optional length for dynamic data types (default: -1, let type determine)
+ * - length: Optional length for dynamic data types (default: -1, let type
+ * determine)
  * - clear_mode: Optional clearing mode (default: "CHECK_FOR_SPACE")
  */
 public final class SetGlobalDataType extends Handler {
@@ -102,10 +105,11 @@ public final class SetGlobalDataType extends Handler {
 	/**
 	 * Sets the data type at the specified address.
 	 * 
-	 * @param addressStr The address where to set the data type as a string.
+	 * @param addressStr   The address where to set the data type as a string.
 	 * @param dataTypeName The name of the data type to apply.
-	 * @param length The length for dynamic data types, or -1 to let the type determine.
-	 * @param clearMode The clearing mode to use when conflicting data exists.
+	 * @param length       The length for dynamic data types, or -1 to let the type
+	 *                     determine.
+	 * @param clearMode    The clearing mode to use when conflicting data exists.
 	 * @return A message indicating success or failure of the operation.
 	 */
 	private String setGlobalDataType(String addressStr, String dataTypeName, int length, ClearDataMode clearMode) {
@@ -139,9 +143,9 @@ public final class SetGlobalDataType extends Handler {
 
 					// Create the data using DataUtilities
 					Data newData = DataUtilities.createData(program, address, dataType, length, clearMode);
-					
+
 					if (newData != null) {
-						result.set("Successfully set data type '" + dataType.getName() + 
+						result.set("Successfully set data type '" + dataType.getName() +
 								"' at address " + address + ". Data length: " + newData.getLength() + " bytes.");
 						success = true;
 					} else {
@@ -149,7 +153,7 @@ public final class SetGlobalDataType extends Handler {
 					}
 
 				} catch (CodeUnitInsertionException e) {
-					result.set("Error: Could not insert data at address " + addressStr + 
+					result.set("Error: Could not insert data at address " + addressStr +
 							" - " + e.getMessage() + ". Try using a different clear_mode.");
 				} catch (Exception e) {
 					result.set("Error: Failed to set data type: " + e.getMessage());
@@ -168,7 +172,8 @@ public final class SetGlobalDataType extends Handler {
 	 * Parses the clear mode string into a ClearDataMode enum value.
 	 * 
 	 * @param clearModeStr The clear mode string.
-	 * @return The corresponding ClearDataMode enum value, or CHECK_FOR_SPACE as default.
+	 * @return The corresponding ClearDataMode enum value, or CHECK_FOR_SPACE as
+	 *         default.
 	 */
 	private ClearDataMode parseClearDataMode(String clearModeStr) {
 		if (clearModeStr == null || clearModeStr.isEmpty()) {

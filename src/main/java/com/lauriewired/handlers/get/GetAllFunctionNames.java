@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.lauriewired.util.ParseUtils.*;
-import static com.lauriewired.util.ParseUtils.parseIntOrDefault;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
