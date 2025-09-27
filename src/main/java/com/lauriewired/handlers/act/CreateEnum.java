@@ -3,28 +3,25 @@ package com.lauriewired.handlers.act;
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
+import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.DataTypeConflictHandler;
 import ghidra.program.model.data.DataTypeManager;
 import ghidra.program.model.data.EnumDataType;
 import ghidra.program.model.listing.Program;
 
-import com.google.gson.Gson;
-
-import javax.swing.SwingUtilities;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Map;
 
 import static com.lauriewired.util.ParseUtils.*;
-import static com.lauriewired.util.EnumUtils.EnumValue;
-import ghidra.program.model.data.CategoryPath;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
- * Handler for creating a new enum in Ghidra.
- * Expects parameters: name, category (optional), size (optional), values (optional JSON array).
- * Values should be in the format: [{"name": "VALUE1", "value": 0, "comment": "First value"}, ...]
+ * Handler to create a new enumeration in Ghidra.
+ * Expects a POST request with JSON body containing:
+ * - name: The name of the enumeration (required)
+ * - values: A JSON object mapping enum value names to their integer values
+ * (required)
+ * - size: The size of the enumeration (1, 2, 4, or 8 bytes, default is 4)
  */
 public final class CreateEnum extends Handler {
 	/**
@@ -43,89 +40,87 @@ public final class CreateEnum extends Handler {
 	 * @param exchange The HTTP exchange containing the request and response.
 	 * @throws IOException If an I/O error occurs during handling.
 	 */
+	@Override
 	public void handle(HttpExchange exchange) throws IOException {
-		Map<String, String> params = parsePostParams(exchange);
-		String name = params.get("name");
-		String category = params.get("category");
-		long size = parseIntOrDefault(params.get("size"), 4); // Default to 4 bytes (int size)
-		String valuesJson = params.get("values"); // Optional
-
-		if (name == null || name.isEmpty()) {
-			sendResponse(exchange, "Enum name is required");
-			return;
-		}
-		sendResponse(exchange, createEnum(name, category, (int) size, valuesJson));
+		Map<String, Object> params = parseJsonParams(exchange);
+		String name = (String) params.get("name");
+		Object valuesObj = params.get("values");
+		String valuesJson = (valuesObj instanceof String) ? (String) valuesObj
+				: (valuesObj != null ? valuesObj.toString() : null);
+		Object sizeObj = params.get("size");
+		int size = (sizeObj instanceof Integer) ? (Integer) sizeObj
+				: parseIntOrDefault(sizeObj != null ? sizeObj.toString() : null, 4);
+		sendResponse(exchange, createEnum(name, valuesJson, size));
 	}
 
 	/**
-	 * Creates a new enum in Ghidra with the specified parameters.
-	 * This method runs on the Swing thread to ensure thread safety when interacting with Ghidra's data types.
-	 *
-	 * @param name        The name of the enum to create.
-	 * @param category    The category path where the enum will be created (optional).
-	 * @param size        The size of the enum in bytes (optional, defaults to 4).
-	 * @param valuesJson  JSON array of enum values (optional).
-	 * @return A message indicating success or failure of the operation.
+	 * Creates a new enumeration in the current Ghidra program.
+	 * Validates parameters and handles errors appropriately.
+	 * 
+	 * @param name       The name of the enumeration.
+	 * @param valuesJson A JSON string representing a map of enum value names to
+	 *                   their integer
+	 * @param size       The size of the enumeration (1, 2, 4, or 8 bytes).
+	 * @return A success or error message.
 	 */
-	private String createEnum(String name, String category, int size, String valuesJson) {
-		Program program = getCurrentProgram(tool);
-		if (program == null)
+	private String createEnum(String name, String valuesJson, int size) {
+		Program program = getCurrentProgram();
+		if (program == null) {
 			return "No program loaded";
-
-		final AtomicReference<String> result = new AtomicReference<>();
-		try {
-			SwingUtilities.invokeAndWait(() -> {
-				int txId = program.startTransaction("Create Enum");
-				boolean success = false;
-				try {
-					DataTypeManager dtm = program.getDataTypeManager();
-					CategoryPath path = new CategoryPath(category == null ? "/" : category);
-
-					if (dtm.getDataType(path, name) != null) {
-						result.set("Error: Enum " + name + " already exists in category " + path);
-						return;
-					}
-					
-					// Create the enum with specified size
-					EnumDataType newEnum = new EnumDataType(path, name, size, dtm);
-
-					StringBuilder responseBuilder = new StringBuilder(
-							"Enum " + name + " created successfully in category " + path + " with size " + size + " bytes");
-
-					if (valuesJson != null && !valuesJson.isEmpty()) {
-						Gson gson = new Gson();
-						EnumValue[] values = gson.fromJson(valuesJson, EnumValue[].class);
-
-						int valuesAdded = 0;
-						for (EnumValue enumValue : values) {
-							if (enumValue.name == null || enumValue.name.isEmpty()) {
-								responseBuilder.append("\nError: Enum value name cannot be empty. Skipping value.");
-								continue;
-							}
-
-							// Add the enum value with or without comment
-							if (enumValue.comment != null && !enumValue.comment.isEmpty()) {
-								newEnum.add(enumValue.name, (long) enumValue.value, enumValue.comment);
-							} else {
-								newEnum.add(enumValue.name, (long) enumValue.value);
-							}
-							valuesAdded++;
-						}
-						responseBuilder.append("\nAdded ").append(valuesAdded).append(" values.");
-					}
-					
-					dtm.addDataType(newEnum, DataTypeConflictHandler.DEFAULT_HANDLER);
-					result.set(responseBuilder.toString());
-					success = true;
-				} catch (Exception e) {
-					result.set("Error: Failed to create enum: " + e.getMessage());
-				} finally {
-					program.endTransaction(txId, success);
-				}
-			});
-		} catch (InterruptedException | InvocationTargetException e) {
-			return "Error: Failed to execute create enum on Swing thread: " + e.getMessage();
 		}
-		return result.get();
+
+		if (name == null || name.isEmpty()) {
+			return "Enumeration name is required";
+		}
+
+		if (valuesJson == null || valuesJson.isEmpty()) {
+			return "Values JSON is required";
+		}
+
+		if (size != 1 && size != 2 && size != 4 && size != 8) {
+			return "Invalid size. Must be 1, 2, 4, or 8 bytes";
+		}
+
+		try {
+			// Parse the values JSON
+			Map<String, Long> values = parseValuesJson(valuesJson);
+
+			if (values.isEmpty()) {
+				return "No valid enum values provided";
+			}
+
+			DataTypeManager dtm = program.getDataTypeManager();
+
+			// Check if enum already exists
+			DataType existingType = dtm.getDataType("/" + name);
+			if (existingType != null) {
+				return "Enumeration with name '" + name + "' already exists";
+			}
+
+			// Create the enumeration
+			int txId = program.startTransaction("Create Enumeration: " + name);
+			try {
+				EnumDataType enumDt = new EnumDataType(name, size);
+
+				for (Map.Entry<String, Long> entry : values.entrySet()) {
+					enumDt.add(entry.getKey(), entry.getValue());
+				}
+
+				// Add the enumeration to the data type manager
+				dtm.addDataType(enumDt, null);
+
+				program.endTransaction(txId, true);
+
+				return "Successfully created enumeration '" + name + "' with " + values.size() +
+						" values, size: " + size + " bytes";
+
+			} catch (Exception e) {
+				program.endTransaction(txId, false);
+				return "Error creating enumeration: " + e.getMessage();
+			}
+
+		} catch (Exception e) {
+			return "Error parsing values JSON: " + e.getMessage();
+		}
 	}
 }

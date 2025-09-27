@@ -30,15 +30,16 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
  * Handler for adding members to a C++ class in Ghidra.
- * This modifies both the class namespace and its associated structure data type.
+ * This modifies both the class namespace and its associated structure data
+ * type.
  * Expects a POST request with parameters:
  * - class_name: Name of the class to modify
  * - parent_namespace: Parent namespace where the class is located (optional)
  * - members: JSON array of members to add, each with fields:
- *   - type: Data type of the member
- *   - name: Name of the member
- *   - comment: Comment for the member (optional)
- *   - offset: Offset in bytes (optional, -1 for next available position)
+ * - type: Data type of the member
+ * - name: Name of the member
+ * - comment: Comment for the member (optional)
+ * - offset: Offset in bytes (optional, -1 for next available position)
  */
 public final class AddClassMembers extends Handler {
 	/**
@@ -73,9 +74,10 @@ public final class AddClassMembers extends Handler {
 	/**
 	 * Adds members to a class in the current Ghidra program.
 	 *
-	 * @param className The name of the class to modify.
-	 * @param parentNamespace The parent namespace where the class is located (optional).
-	 * @param membersJson JSON array of members to add.
+	 * @param className       The name of the class to modify.
+	 * @param parentNamespace The parent namespace where the class is located
+	 *                        (optional).
+	 * @param membersJson     JSON array of members to add.
 	 * @return A message indicating success or failure.
 	 */
 	private String addClassMembers(String className, String parentNamespace, String membersJson) {
@@ -112,7 +114,7 @@ public final class AddClassMembers extends Handler {
 					}
 
 					if (classNamespace == null) {
-						result.set("Error: Class '" + className + "' not found" + 
+						result.set("Error: Class '" + className + "' not found" +
 								(parent != null ? " in namespace " + parent.getName() : ""));
 						return;
 					}
@@ -156,7 +158,8 @@ public final class AddClassMembers extends Handler {
 							}
 
 							if (member.offset != -1) {
-								classStruct.insertAtOffset((int) member.offset, memberDt, -1, member.name, member.comment);
+								classStruct.insertAtOffset((int) member.offset, memberDt, -1, member.name,
+										member.comment);
 								responseBuilder.append("\nAdded member '").append(member.name)
 										.append("' at offset ").append(member.offset);
 							} else {
@@ -166,7 +169,8 @@ public final class AddClassMembers extends Handler {
 							}
 							membersAdded++;
 						}
-						responseBuilder.append("\nSuccessfully added ").append(membersAdded).append(" members to class ").append(className);
+						responseBuilder.append("\nSuccessfully added ").append(membersAdded)
+								.append(" members to class ").append(className);
 						result.set(responseBuilder.toString());
 						success = membersAdded > 0;
 					}

@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +22,94 @@ import java.util.Map;
  * and send HTTP responses.
  */
 public final class ParseUtils {
+	/**
+	 * Definition of a field in a structure.
+	 */
+	public static class FieldDefinition {
+		/** Field name */
+        String name;
+
+		/** Field type */
+        String type;
+
+		/** Field offset */
+        int offset;
+        
+		/**
+		 * Constructor
+		 * 
+		 * @param name   The name of the field.
+		 * @param type   The type of the field.
+		 * @param offset The offset of the field.
+		 */
+        public FieldDefinition(String name, String type, int offset) {
+            this.name = name;
+            this.type = type;
+            this.offset = offset;
+        }
+    }
+
+	public static List<FieldDefinition> parseFieldsJson(String fieldsJson) {
+        List<FieldDefinition> fields = new ArrayList<>();
+        
+        try {
+            // Remove outer brackets and whitespace
+            String content = fieldsJson.trim();
+            if (content.startsWith("[")) {
+                content = content.substring(1);
+            }
+            if (content.endsWith("]")) {
+                content = content.substring(0, content.length() - 1);
+            }
+            
+            // Split by field objects (simple parsing)
+            String[] fieldStrings = content.split("\\},\\s*\\{");
+            
+            for (String fieldStr : fieldStrings) {
+                // Clean up braces
+                fieldStr = fieldStr.replace("{", "").replace("}", "").trim();
+                
+                String name = null;
+                String type = null;
+                int offset = -1;
+                
+                // Parse key-value pairs
+                String[] pairs = fieldStr.split(",");
+                for (String pair : pairs) {
+                    String[] keyValue = pair.split(":");
+                    if (keyValue.length == 2) {
+                        String key = keyValue[0].trim().replace("\"", "");
+                        String value = keyValue[1].trim().replace("\"", "");
+                        
+                        switch (key) {
+                            case "name":
+                                name = value;
+                                break;
+                            case "type":
+                                type = value;
+                                break;
+                            case "offset":
+                                try {
+                                    offset = Integer.parseInt(value);
+                                } catch (NumberFormatException e) {
+                                    // Ignore invalid offset
+                                }
+                                break;
+                        }
+                    }
+                }
+                
+                if (name != null && type != null) {
+                    fields.add(new FieldDefinition(name, type, offset));
+                }
+            }
+        } catch (Exception e) {
+            // Return empty list on parse error
+        }
+        
+        return fields;
+    }
+	
 	/**
 	 * Parse query parameters from the request URI.
 	 * 
@@ -115,6 +205,54 @@ public final class ParseUtils {
 		} catch (NumberFormatException e) {
 			return defaultValue;
 		}
+	}
+
+	/**
+	 * Parse a JSON-like string of key-value pairs into a map.
+	 * 
+	 * The input string should be in the format:
+	 * {"key1": value1, "key2": value2, ...}
+	 * where keys are strings and values are integers.
+	 * 
+	 * @param valuesJson The JSON-like string to parse.
+	 * @return A map of key-value pairs parsed from the input string.
+	 *         If parsing fails, returns an empty map.
+	 */
+	public static Map<String, Long> parseValuesJson(String valuesJson) {
+		Map<String, Long> values = new LinkedHashMap<>();
+
+		try {
+			// Remove outer braces and whitespace
+			String content = valuesJson.trim();
+			if (content.startsWith("{")) {
+				content = content.substring(1);
+			}
+			if (content.endsWith("}")) {
+				content = content.substring(0, content.length() - 1);
+			}
+
+			// Split by commas (simple parsing)
+			String[] pairs = content.split(",");
+
+			for (String pair : pairs) {
+				String[] keyValue = pair.split(":");
+				if (keyValue.length == 2) {
+					String key = keyValue[0].trim().replace("\"", "");
+					String valueStr = keyValue[1].trim();
+
+					try {
+						Long value = Long.parseLong(valueStr);
+						values.put(key, value);
+					} catch (NumberFormatException e) {
+						// Skip invalid values
+					}
+				}
+			}
+		} catch (Exception e) {
+			// Return empty map on parse error
+		}
+
+		return values;
 	}
 
 	/**

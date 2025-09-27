@@ -3,30 +3,22 @@ package com.lauriewired.handlers.act;
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
-import ghidra.program.model.data.DataType;
-import ghidra.program.model.data.DataTypeConflictHandler;
-import ghidra.program.model.data.DataTypeManager;
-import ghidra.program.model.data.StructureDataType;
+import ghidra.program.model.data.*;
 import ghidra.program.model.listing.Program;
 
-import com.google.gson.Gson;
-
-import javax.swing.SwingUtilities;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.List;
+import java.util.Map;
 
 import static com.lauriewired.util.GhidraUtils.*;
 import static com.lauriewired.util.ParseUtils.*;
-import static com.lauriewired.util.StructUtils.StructMember;
-import ghidra.program.model.data.CategoryPath;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
- * Handler for creating a new struct in Ghidra.
- * Expects parameters: name, category (optional), size (optional), members (optional JSON array).
- * Members should be in the format: [{"name": "member1", "type": "int", "offset": 0, "comment": "Member 1"}, ...]
+ * Handler to create a new struct in Ghidra based on provided JSON parameters.
+ * Expects a POST request with parameters:
+ * - name: The name of the structure (required)
+ * - fields: A JSON array of field definitions (required)
  */
 public final class CreateStruct extends Handler {
 	/**
@@ -45,89 +37,86 @@ public final class CreateStruct extends Handler {
 	 * @param exchange The HTTP exchange containing the request and response.
 	 * @throws IOException If an I/O error occurs during handling.
 	 */
+	@Override
 	public void handle(HttpExchange exchange) throws IOException {
-		Map<String, String> params = parsePostParams(exchange);
-		String name = params.get("name");
-		String category = params.get("category");
-		long size = parseIntOrDefault(params.get("size"), 0);
-		String membersJson = params.get("members"); // Optional
-
-		if (name == null || name.isEmpty()) {
-			sendResponse(exchange, "Struct name is required");
-			return;
-		}
-		sendResponse(exchange, createStruct(name, category, (int) size, membersJson));
+		Map<String, Object> params = parseJsonParams(exchange);
+		String name = (String) params.get("name");
+		Object fieldsObj = params.get("fields");
+		String fieldsJson = (fieldsObj instanceof String) ? (String) fieldsObj
+				: (fieldsObj != null ? fieldsObj.toString() : null);
+		sendResponse(exchange, createStruct(name, fieldsJson));
 	}
 
 	/**
-	 * Creates a new struct in Ghidra with the specified parameters.
-	 * This method runs on the Swing thread to ensure thread safety when interacting with Ghidra's data types.
+	 * Creates a new structure in the current Ghidra program.
 	 *
-	 * @param name        The name of the struct to create.
-	 * @param category    The category path where the struct will be created (optional).
-	 * @param size        The size of the struct (optional, defaults to 0).
-	 * @param membersJson JSON array of struct members (optional).
-	 * @return A message indicating success or failure of the operation.
+	 * @param name       The name of the structure to create.
+	 * @param fieldsJson A JSON array string defining the fields of the structure.
+	 * @return A message indicating success or failure.
 	 */
-	private String createStruct(String name, String category, int size, String membersJson) {
-		Program program = getCurrentProgram(tool);
-		if (program == null)
+	private String createStruct(String name, String fieldsJson) {
+		Program program = getCurrentProgram();
+		if (program == null) {
 			return "No program loaded";
-
-		final AtomicReference<String> result = new AtomicReference<>();
-		try {
-			SwingUtilities.invokeAndWait(() -> {
-				int txId = program.startTransaction("Create Struct");
-				boolean success = false;
-				try {
-					DataTypeManager dtm = program.getDataTypeManager();
-					CategoryPath path = new CategoryPath(category == null ? "/" : category);
-
-					if (dtm.getDataType(path, name) != null) {
-						result.set("Error: Struct " + name + " already exists in category " + path);
-						return;
-					}
-					StructureDataType newStruct = new StructureDataType(path, name, size, dtm);
-
-					StringBuilder responseBuilder = new StringBuilder(
-							"Struct " + name + " created successfully in category " + path);
-
-					if (membersJson != null && !membersJson.isEmpty()) {
-						Gson gson = new Gson();
-						StructMember[] members = gson.fromJson(membersJson, StructMember[].class);
-
-						int membersAdded = 0;
-						for (StructMember member : members) {
-							DataType memberDt = resolveDataType(tool, dtm, member.type);
-							if (memberDt == null) {
-								responseBuilder.append("\nError: Could not resolve data type '").append(member.type)
-										.append("' for member '").append(member.name)
-										.append("'. Aborting further member creation.");
-								break;
-							}
-
-							if (member.offset != -1) {
-								newStruct.insertAtOffset((int) member.offset, memberDt, -1, member.name,
-										member.comment);
-							} else {
-								newStruct.add(memberDt, member.name, member.comment);
-							}
-							membersAdded++;
-						}
-						responseBuilder.append("\nAdded ").append(membersAdded).append(" members.");
-					}
-					dtm.addDataType(newStruct, DataTypeConflictHandler.DEFAULT_HANDLER);
-					result.set(responseBuilder.toString());
-					success = true;
-				} catch (Exception e) {
-					result.set("Error: Failed to create struct: " + e.getMessage());
-				} finally {
-					program.endTransaction(txId, success);
-				}
-			});
-		} catch (InterruptedException | InvocationTargetException e) {
-			return "Error: Failed to execute create struct on Swing thread: " + e.getMessage();
 		}
-		return result.get();
+
+		if (name == null || name.isEmpty()) {
+			return "Structure name is required";
+		}
+
+		if (fieldsJson == null || fieldsJson.isEmpty()) {
+			return "Fields JSON is required";
+		}
+
+		try {
+			// Parse the fields JSON (simplified parsing for basic structure)
+			// Expected format:
+			// [{"name":"field1","type":"int"},{"name":"field2","type":"char"}]
+			List<FieldDefinition> fields = parseFieldsJson(fieldsJson);
+
+			if (fields.isEmpty()) {
+				return "No valid fields provided";
+			}
+
+			DataTypeManager dtm = program.getDataTypeManager();
+
+			// Check if struct already exists
+			DataType existingType = dtm.getDataType("/" + name);
+			if (existingType != null) {
+				return "Structure with name '" + name + "' already exists";
+			}
+
+			// Create the structure
+			int txId = program.startTransaction("Create Structure: " + name);
+			try {
+				StructureDataType struct = new StructureDataType(name, 0);
+
+				// Add fields sequentially for simplicity
+				for (FieldDefinition field : fields) {
+					DataType fieldType = resolveDataType(dtm, field.type);
+					if (fieldType == null) {
+						return "Unknown field type: " + field.type;
+					}
+
+					// Add field to the end of the structure
+					struct.add(fieldType, fieldType.getLength(), field.name, "");
+				}
+
+				// Add the structure to the data type manager
+				DataType createdStruct = dtm.addDataType(struct, null);
+
+				program.endTransaction(txId, true);
+
+				return "Successfully created structure '" + name + "' with " + fields.size() +
+						" fields, total size: " + createdStruct.getLength() + " bytes";
+
+			} catch (Exception e) {
+				program.endTransaction(txId, false);
+				return "Error creating structure: " + e.getMessage();
+			}
+
+		} catch (Exception e) {
+			return "Error parsing fields JSON: " + e.getMessage();
+		}
 	}
 }
