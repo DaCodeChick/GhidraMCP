@@ -1,4 +1,4 @@
-package com.lauriewired.handlers.set;
+package com.lauriewired.handlers.rename;
 
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
