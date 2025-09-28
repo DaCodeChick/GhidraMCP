@@ -1,4 +1,4 @@
-package com.lauriewired.handlers.act;
+package com.lauriewired.handlers.create;
 
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
@@ -25,15 +25,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.lauriewired.util.GhidraUtils.*;
 import static com.lauriewired.util.ParseUtils.*;
-import static com.lauriewired.util.StructUtils.StructMember;
 import ghidra.program.model.data.CategoryPath;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
  * Handler for creating a new C++ class in Ghidra.
  * This creates both a class namespace and an associated structure data type.
- * Expects parameters: name, parent_namespace (optional), members (optional JSON array).
- * Members should be in the format: [{"name": "member1", "type": "int", "offset": 0, "comment": "Member 1"}, ...]
+ * Expects parameters: name, parent_namespace (optional), members (optional JSON
+ * array).
+ * Members should be in the format: [{"name": "member1", "type": "int",
+ * "offset": 0, "comment": "Member 1"}, ...]
  */
 public final class CreateClass extends Handler {
 	/**
@@ -70,9 +71,9 @@ public final class CreateClass extends Handler {
 	/**
 	 * Creates a C++ class in Ghidra with the specified parameters.
 	 *
-	 * @param name The name of the class to create.
+	 * @param name            The name of the class to create.
 	 * @param parentNamespace The parent namespace (null for global).
-	 * @param membersJson JSON string representing class members.
+	 * @param membersJson     JSON string representing class members.
 	 * @return A status message indicating success or failure.
 	 */
 	private String createClassInGhidra(String name, String parentNamespace, String membersJson) {
@@ -104,7 +105,7 @@ public final class CreateClass extends Handler {
 					try {
 						classNamespace = symbolTable.createClass(parent, name, SourceType.USER_DEFINED);
 					} catch (DuplicateNameException e) {
-						result.set("Error: Class '" + name + "' already exists in namespace " + 
+						result.set("Error: Class '" + name + "' already exists in namespace " +
 								(parent != null ? parent.getName() : "global"));
 						return;
 					} catch (InvalidInputException e) {
@@ -125,10 +126,10 @@ public final class CreateClass extends Handler {
 					// Add members if provided
 					if (membersJson != null && !membersJson.isEmpty()) {
 						Gson gson = new Gson();
-						StructMember[] members = gson.fromJson(membersJson, StructMember[].class);
+						FieldDefinition[] members = gson.fromJson(membersJson, FieldDefinition[].class);
 
 						int membersAdded = 0;
-						for (StructMember member : members) {
+						for (FieldDefinition member : members) {
 							DataType memberDt = resolveDataType(tool, dtm, member.type);
 							if (memberDt == null) {
 								responseBuilder.append("\nError: Could not resolve data type '").append(member.type)
@@ -150,7 +151,7 @@ public final class CreateClass extends Handler {
 
 					// Add the structure to the data type manager
 					dtm.addDataType(classStruct, DataTypeConflictHandler.DEFAULT_HANDLER);
-					
+
 					responseBuilder.append("\nClass structure created in category: ").append(classCategory);
 					result.set(responseBuilder.toString());
 					success = true;
@@ -173,13 +174,13 @@ public final class CreateClass extends Handler {
 	private CategoryPath getCategoryPath(GhidraClass classNamespace) {
 		List<String> pathParts = new ArrayList<>();
 		Namespace current = classNamespace;
-		
+
 		// Build path from class up to root (excluding global namespace)
 		while (current != null && !current.isGlobal()) {
 			pathParts.add(0, current.getName()); // Insert at beginning to reverse order
 			current = current.getParentNamespace();
 		}
-		
+
 		// Create category path starting with "/classes"
 		if (pathParts.isEmpty()) {
 			return new CategoryPath("/classes");

@@ -1,4 +1,4 @@
-package com.lauriewired.handlers.act;
+package com.lauriewired.handlers.add;
 
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;

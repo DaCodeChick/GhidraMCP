@@ -29,13 +29,13 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
  * Handler for GET requests to retrieve the callees of a function at a specific
  * address.
  */
-public class GetCallees extends Handler {
+public class GetFunctionCallees extends Handler {
 	/**
-	 * Constructor for GetCallees.
+	 * Constructor for GetFunctionCallees.
 	 * 
 	 * @param tool the plugin tool
 	 */
-	public GetCallees(PluginTool tool) {
+	public GetFunctionCallees(PluginTool tool) {
 		super(tool, "/function_callees");
 	}
 

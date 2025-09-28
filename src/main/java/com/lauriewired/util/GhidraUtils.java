@@ -37,6 +37,28 @@ public final class GhidraUtils {
 	}
 
 	/**
+	 * Gets the category name of a data type.
+	 * If the data type is in the root category, returns "builtin".
+	 * Otherwise, returns the last part of the category path in lowercase.
+	 * 
+	 * @param dt the data type
+	 * @return the category name
+	 */
+	public String getCategoryName(DataType dt) {
+		if (dt.getCategoryPath() == null) {
+			return "builtin";
+		}
+		String categoryPath = dt.getCategoryPath().getPath();
+		if (categoryPath.isEmpty() || categoryPath.equals("/")) {
+			return "builtin";
+		}
+
+		// Extract the last part of the category path
+		String[] parts = categoryPath.split("/");
+		return parts[parts.length - 1].toLowerCase();
+	}
+
+	/**
 	 * Resolves a data type by name, handling common types and pointer types
 	 *
 	 * @param tool     The plugin tool to use for services

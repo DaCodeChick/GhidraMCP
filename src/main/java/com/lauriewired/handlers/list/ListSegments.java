@@ -1,10 +1,10 @@
-package com.lauriewired.handlers.get;
+package com.lauriewired.handlers.list;
 
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.listing.Program;
-import ghidra.program.model.symbol.Symbol;
+import ghidra.program.model.mem.MemoryBlock;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,22 +15,21 @@ import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
- * Handler for listing all external symbols (imports) in the current program.
- * Responds with a paginated list of imports in the format:
- * "symbolName -> symbolAddress".
+ * Handler for listing memory segments in the current program.
+ * Responds with a list of memory blocks, paginated by offset and limit.
  */
-public final class ListImports extends Handler {
+public final class ListSegments extends Handler {
 	/**
-	 * Constructor for ListImports handler.
+	 * Constructor for ListSegments handler.
 	 *
 	 * @param tool the PluginTool instance to use for accessing the current program.
 	 */
-	public ListImports(PluginTool tool) {
-		super(tool, "/imports", "/list_imports");
+	public ListSegments(PluginTool tool) {
+		super(tool, "/list_segments", "/segments");
 	}
 
 	/**
-	 * Handles the HTTP request to list imports.
+	 * Handles the HTTP request to list memory segments.
 	 * Expects query parameters 'offset' and 'limit' for pagination.
 	 *
 	 * @param exchange the HttpExchange instance containing the request and
@@ -42,24 +41,25 @@ public final class ListImports extends Handler {
 		Map<String, String> qparams = parseQueryParams(exchange);
 		int offset = parseIntOrDefault(qparams.get("offset"), 0);
 		int limit = parseIntOrDefault(qparams.get("limit"), 100);
-		sendResponse(exchange, listImports(offset, limit));
+		sendResponse(exchange, listSegments(offset, limit));
 	}
 
 	/**
-	 * Lists all external symbols (imports) in the current program, paginated.
+	 * Lists memory segments in the current program, paginated by offset and limit.
 	 *
 	 * @param offset the starting index for pagination.
-	 * @param limit  the maximum number of results to return.
-	 * @return a string containing the paginated list of imports.
+	 * @param limit  the maximum number of segments to return.
+	 * @return a string representation of the memory segments, formatted for
+	 *         pagination.
 	 */
-	private String listImports(int offset, int limit) {
+	private String listSegments(int offset, int limit) {
 		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 
 		List<String> lines = new ArrayList<>();
-		for (Symbol symbol : program.getSymbolTable().getExternalSymbols()) {
-			lines.add(symbol.getName() + " -> " + symbol.getAddress());
+		for (MemoryBlock block : program.getMemory().getBlocks()) {
+			lines.add(String.format("%s: %s - %s", block.getName(), block.getStart(), block.getEnd()));
 		}
 		return paginateList(lines, offset, limit);
 	}

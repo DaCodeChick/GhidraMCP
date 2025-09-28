@@ -18,49 +18,8 @@ import java.net.InetSocketAddress;
 import java.util.*;
 
 /**
- * GhidraMCP Plugin - Model Context Protocol Server for Ghidra
- * 
- * This plugin creates an HTTP server that exposes Ghidra's analysis
- * capabilities
- * through a RESTful API, enabling AI language models to autonomously perform
- * reverse engineering tasks. The plugin integrates with the CodeBrowser tool
- * and provides comprehensive access to:
- * 
- * <ul>
- * <li>Function decompilation and analysis</li>
- * <li>Symbol and variable management</li>
- * <li>Memory and data structure examination</li>
- * <li>Cross-reference analysis</li>
- * <li>Binary annotation and commenting</li>
- * </ul>
- * 
- * <h3>Server Lifecycle</h3>
- * The HTTP server automatically starts when the plugin is enabled in
- * CodeBrowser
- * with an active program loaded. The server runs on a configurable port
- * (default: 8080)
- * and remains active while the CodeBrowser session continues.
- * 
- * <h3>API Endpoints</h3>
- * The plugin exposes over 20 REST endpoints for comprehensive binary analysis:
- * <ul>
- * <li><code>/methods</code> - List all functions with pagination</li>
- * <li><code>/decompile</code> - Decompile functions by name or address</li>
- * <li><code>/renameFunction</code> - Rename functions and variables</li>
- * <li><code>/xrefs_to</code> - Analyze cross-references</li>
- * <li><code>/strings</code> - Extract and filter string data</li>
- * </ul>
- * 
- * <h3>Thread Safety</h3>
- * All Ghidra API interactions are properly synchronized using
- * SwingUtilities.invokeAndWait()
- * to ensure thread safety with Ghidra's event dispatch thread.
- * 
- * @author LaurieWired
- * @version 2.0
- * @since Ghidra 11.3.2
- * @see ghidra.framework.plugintool.Plugin
- * @see com.sun.net.httpserver.HttpServer
+ * A Ghidra plugin that starts an embedded HTTP server to expose program data via a RESTful API.
+ * The server's port and address can be configured via the Tool Options.
  */
 @PluginInfo(status = PluginStatus.RELEASED, packageName = ghidra.app.DeveloperPluginPackage.NAME, category = PluginCategoryNames.ANALYSIS, shortDescription = "HTTP server plugin", description = "Starts an embedded HTTP server to expose program data. Port configurable via Tool Options.")
 public class GhidraMCPPlugin extends Plugin {
@@ -96,24 +55,10 @@ public class GhidraMCPPlugin extends Plugin {
 	private int decompileTimeout;
 
 	/**
-	 * Constructs a new GhidraMCP plugin instance and initializes the HTTP server.
-	 * 
-	 * This constructor:
-	 * <ol>
-	 * <li>Registers the port configuration option in Ghidra's tool options</li>
-	 * <li>Starts the embedded HTTP server on the configured port</li>
-	 * <li>Creates all REST API endpoint handlers</li>
-	 * </ol>
-	 * 
-	 * The server will only function properly when:
-	 * <ul>
-	 * <li>A program is loaded in the current CodeBrowser session</li>
-	 * <li>The plugin is enabled in the Developer tools configuration</li>
-	 * </ul>
-	 * 
-	 * @param tool The Ghidra PluginTool instance that hosts this plugin
-	 * @throws IllegalStateException if the HTTP server fails to start
-	 * @see #startServer()
+	 * Constructor called by Ghidra to initialize the plugin.
+	 * Sets up configuration options and starts the HTTP server.
+	 *
+	 * @param tool The plugin tool that manages this plugin.
 	 */
 	public GhidraMCPPlugin(PluginTool tool) {
 		super(tool);
@@ -143,49 +88,10 @@ public class GhidraMCPPlugin extends Plugin {
 	}
 
 	/**
-	 * Initializes and starts the embedded HTTP server with all API endpoints.
-	 * 
-	 * This method creates an HTTP server instance and registers handlers for all
-	 * supported REST API endpoints. The server supports:
-	 * 
-	 * <h4>Function Analysis Endpoints:</h4>
-	 * <ul>
-	 * <li><code>GET /methods</code> - List functions with pagination</li>
-	 * <li><code>POST /decompile</code> - Decompile function by name</li>
-	 * <li><code>GET /decompile_function?address=0x...</code> - Decompile by
-	 * address</li>
-	 * <li><code>GET /disassemble_function?address=0x...</code> - Get assembly
-	 * listing</li>
-	 * </ul>
-	 * 
-	 * <h4>Symbol Management Endpoints:</h4>
-	 * <ul>
-	 * <li><code>POST /renameFunction</code> - Rename functions</li>
-	 * <li><code>POST /renameVariable</code> - Rename local variables</li>
-	 * <li><code>POST /set_function_prototype</code> - Set function signatures</li>
-	 * </ul>
-	 * 
-	 * <h4>Analysis and Reference Endpoints:</h4>
-	 * <ul>
-	 * <li><code>GET /xrefs_to?address=0x...</code> - Find references to
-	 * address</li>
-	 * <li><code>GET /xrefs_from?address=0x...</code> - Find references from
-	 * address</li>
-	 * <li><code>GET /strings</code> - List string data with filtering</li>
-	 * </ul>
-	 * 
-	 * <h4>Commenting and Annotation:</h4>
-	 * <ul>
-	 * <li><code>POST /set_decompiler_comment</code> - Add pseudocode comments</li>
-	 * <li><code>POST /set_disassembly_comment</code> - Add assembly comments</li>
-	 * </ul>
-	 * 
-	 * The server runs on a separate thread to avoid blocking Ghidra's UI thread.
-	 * All endpoints return plain text responses with UTF-8 encoding.
-	 * 
-	 * @throws IOException if the server cannot bind to the configured port
-	 * @see #sendResponse(HttpExchange, String)
-	 * @see #parseQueryParams(HttpExchange)
+	 * Starts the embedded HTTP server on the configured port and address.
+	 * Registers all API route handlers found in the classpath.
+	 *
+	 * @throws IOException If the server fails to start (e.g., port in use).
 	 */
 	private void startServer() throws IOException {
 		// Read the configured port
@@ -219,7 +125,8 @@ public class GhidraMCPPlugin extends Plugin {
 				String[] paths = handler.getPaths();
 				for (String path : paths) {
 					if (routes.containsKey(path)) {
-						Msg.error(this, "Handler class " + clazz.getName() + " already registered for path " + path + ", skipped.");
+						Msg.error(this, "Handler class " + clazz.getName() + " already registered for path " + path
+								+ ", skipped.");
 						continue;
 					}
 					routes.put(path, handler);
@@ -252,29 +159,8 @@ public class GhidraMCPPlugin extends Plugin {
 	}
 
 	/**
-	 * Cleanly shuts down the HTTP server and releases plugin resources.
-	 * 
-	 * This method is automatically called by Ghidra when:
-	 * <ul>
-	 * <li>The plugin is disabled in the CodeBrowser configuration</li>
-	 * <li>The CodeBrowser tool is closed</li>
-	 * <li>Ghidra is shutting down</li>
-	 * <li>The plugin is being reloaded</li>
-	 * </ul>
-	 * 
-	 * <b>Shutdown Process:</b>
-	 * <ol>
-	 * <li>Stops the HTTP server with a 1-second grace period for active
-	 * connections</li>
-	 * <li>Nullifies the server reference to prevent further use</li>
-	 * <li>Calls the parent dispose method to clean up plugin infrastructure</li>
-	 * </ol>
-	 * 
-	 * <b>Thread Safety:</b> This method can be called from any thread and safely
-	 * handles concurrent access to the server instance.
-	 * 
-	 * @see HttpServer#stop(int)
-	 * @see Plugin#dispose()
+	 * Stops the embedded HTTP server if it is running.
+	 * Called when the plugin is disposed or Ghidra is shutting down.
 	 */
 	@Override
 	public void dispose() {
