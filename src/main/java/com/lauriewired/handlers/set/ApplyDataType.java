@@ -25,13 +25,13 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
  * - clear_existing: Whether to clear existing code/data at the address
  * (optional, default: true)
  */
-public final class SetDataType extends Handler {
+public final class ApplyDataType extends Handler {
 	/**
-	 * Constructor for the SetDataType handler.
+	 * Constructor for the ApplyDataType handler.
 	 * 
 	 * @param tool The plugin tool instance.
 	 */
-	public SetDataType(PluginTool tool) {
+	public ApplyDataType(PluginTool tool) {
 		super(tool, "/apply_data_type", "/set_global_data_type");
 	}
 

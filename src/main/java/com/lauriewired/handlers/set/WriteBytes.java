@@ -27,13 +27,13 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
  * Expects POST parameters: "address" (the target address) and "bytes" (hex
  * string separated by spaces).
  */
-public final class SetBytes extends Handler {
+public final class WriteBytes extends Handler {
 	/**
-	 * Constructor for the new SetBytes handler.
+	 * Constructor for the new WriteBytes handler.
 	 *
 	 * @param tool the PluginTool instance to use for program access
 	 */
-	public SetBytes(PluginTool tool) {
+	public WriteBytes(PluginTool tool) {
 		super(tool, "/write_bytes");
 	}
 
@@ -103,7 +103,7 @@ public final class SetBytes extends Handler {
 
 					Listing listing = program.getListing();
 					listing.clearCodeUnits(address, endAddress, false);
-					memory.setBytes(address, newBytes);
+					memory.WriteBytes(address, newBytes);
 
 					Disassembler disassembler = Disassembler.getDisassembler(program, TaskMonitor.DUMMY, null);
 					disassembler.disassemble(address, null);
