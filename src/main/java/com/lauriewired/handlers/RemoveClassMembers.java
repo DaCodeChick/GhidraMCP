@@ -1,4 +1,4 @@
-package com.lauriewired.handlers.act;
+package com.lauriewired.handlers;
 
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
@@ -31,7 +31,8 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
  * Expects a POST request with parameters:
  * - class_name: Name of the class to modify
  * - parent_namespace: Parent namespace where the class is located (optional)
- * - members: JSON array of member names to remove, or single member name as string
+ * - members: JSON array of member names to remove, or single member name as
+ * string
  */
 public final class RemoveClassMembers extends Handler {
 	/**
@@ -66,9 +67,11 @@ public final class RemoveClassMembers extends Handler {
 	/**
 	 * Removes members from a class in the current Ghidra program.
 	 *
-	 * @param className The name of the class to modify.
-	 * @param parentNamespace The parent namespace where the class is located (optional).
-	 * @param membersParam JSON array of member names to remove, or single member name.
+	 * @param className       The name of the class to modify.
+	 * @param parentNamespace The parent namespace where the class is located
+	 *                        (optional).
+	 * @param membersParam    JSON array of member names to remove, or single member
+	 *                        name.
 	 * @return A message indicating success or failure.
 	 */
 	private String removeClassMembers(String className, String parentNamespace, String membersParam) {
@@ -105,7 +108,7 @@ public final class RemoveClassMembers extends Handler {
 					}
 
 					if (classNamespace == null) {
-						result.set("Error: Class '" + className + "' not found" + 
+						result.set("Error: Class '" + className + "' not found" +
 								(parent != null ? " in namespace " + parent.getName() : ""));
 						return;
 					}
@@ -141,7 +144,7 @@ public final class RemoveClassMembers extends Handler {
 								break;
 							}
 						}
-						
+
 						if (component == null) {
 							responseBuilder.append("\nWarning: Member '").append(memberName)
 									.append("' not found in class. Skipping.");
