@@ -18,7 +18,8 @@ import java.net.InetSocketAddress;
 import java.util.*;
 
 /**
- * A Ghidra plugin that starts an embedded HTTP server to expose program data via a RESTful API.
+ * A Ghidra plugin that starts an embedded HTTP server to expose program data
+ * via a RESTful API.
  * The server's port and address can be configured via the Tool Options.
  */
 @PluginInfo(status = PluginStatus.RELEASED, packageName = ghidra.app.DeveloperPluginPackage.NAME, category = PluginCategoryNames.ANALYSIS, shortDescription = "HTTP server plugin", description = "Starts an embedded HTTP server to expose program data. Port configurable via Tool Options.")
@@ -42,8 +43,8 @@ public class GhidraMCPPlugin extends Plugin {
 	/** Configuration option name for the decompile timeout setting */
 	private static final String DECOMPILE_TIMEOUT_OPTION_NAME = "Decompile Timeout";
 
-	/** Default port number for the HTTP server (8080) */
-	private static final int DEFAULT_PORT = 8080;
+	/** Default port number for the HTTP server (8089) */
+	private static final int DEFAULT_PORT = 8089;
 
 	/** Default decompile timeout in seconds */
 	private static final int DEFAULT_DECOMPILE_TIMEOUT = 30;
