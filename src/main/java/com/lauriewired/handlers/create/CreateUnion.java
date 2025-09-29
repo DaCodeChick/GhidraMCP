@@ -25,8 +25,8 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
  * Expects JSON parameters:
  * - name: The name of the union (String)
  * - fields: A list of field definitions, where each field is an object with:
- *   - name: The name of the field (String)
- *   - type: The data type of the field (String)
+ * - name: The name of the field (String)
+ * - type: The data type of the field (String)
  */
 public final class CreateUnion extends Handler {
 	/**
@@ -43,19 +43,20 @@ public final class CreateUnion extends Handler {
 	 * Expects JSON parameters:
 	 * - name: The name of the union (String)
 	 * - fields: A list of field definitions, where each field is an object with:
-	 *   - name: The name of the field (String)
-	 *   - type: The data type of the field (String)
+	 * - name: The name of the field (String)
+	 * - type: The data type of the field (String)
 	 *
 	 * Example JSON body:
 	 * {
-	 *   "name": "MyUnion",
-	 *   "fields": [
-	 *     {"name": "field1", "type": "int"},
-	 *     {"name": "field2", "type": "float"}
-	 *   ]
+	 * "name": "MyUnion",
+	 * "fields": [
+	 * {"name": "field1", "type": "int"},
+	 * {"name": "field2", "type": "float"}
+	 * ]
 	 * }
 	 *
-	 * @param exchange The HttpExchange object representing the HTTP request and response.
+	 * @param exchange The HttpExchange object representing the HTTP request and
+	 *                 response.
 	 * @throws IOException If an I/O error occurs.
 	 */
 	@Override
@@ -75,7 +76,8 @@ public final class CreateUnion extends Handler {
 
 	/**
 	 * Creates a union in the current program with the specified name and fields.
-	 * @param name The name of the union.
+	 * 
+	 * @param name      The name of the union.
 	 * @param fieldsObj The fields definition object (should be a List of Maps).
 	 * @return A result message indicating success or failure.
 	 */
@@ -147,8 +149,10 @@ public final class CreateUnion extends Handler {
 	}
 
 	/**
-	 * Simple test method to verify the endpoint is reachable and parameters are parsed.
-	 * @param name The name of the union.
+	 * Simple test method to verify the endpoint is reachable and parameters are
+	 * parsed.
+	 * 
+	 * @param name      The name of the union.
 	 * @param fieldsObj The fields definition object.
 	 * @return A success message with the provided name.
 	 */
@@ -163,8 +167,10 @@ public final class CreateUnion extends Handler {
 	}
 
 	/**
-	 * Creates a union in the current program with the specified name and fields JSON.
-	 * @param name The name of the union.
+	 * Creates a union in the current program with the specified name and fields
+	 * JSON.
+	 * 
+	 * @param name       The name of the union.
 	 * @param fieldsJson The fields definition JSON string.
 	 * @return A result message indicating success or failure.
 	 */
