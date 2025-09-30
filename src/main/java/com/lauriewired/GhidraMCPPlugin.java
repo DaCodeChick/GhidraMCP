@@ -131,14 +131,15 @@ public class GhidraMCPPlugin extends Plugin {
 						continue;
 					}
 					routes.put(path, handler);
+
+					server.createContext(path, exchange -> {
+						try {
+							handler.handle(exchange);
+						} catch (Exception e) {
+							throw new RuntimeException(e);
+						}
+					});
 				}
-				server.createContext(handler.getPath(), exchange -> {
-					try {
-						handler.handle(exchange);
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				});
 			} catch (NoSuchMethodException e) {
 				Msg.error(this, "Handler class " + clazz.getName() +
 						" doesn't have constructor xxx(PluginTool tool), skipped.");

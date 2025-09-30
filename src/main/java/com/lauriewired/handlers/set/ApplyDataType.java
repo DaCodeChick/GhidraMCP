@@ -14,6 +14,7 @@ import ghidra.program.model.listing.Program;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.lauriewired.util.GhidraUtils.resolveDataType;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
@@ -66,7 +67,7 @@ public final class ApplyDataType extends Handler {
 	 * @return A message indicating the result of the operation.
 	 */
 	private String applyDataType(String addressStr, String typeName, boolean clearExisting) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}
@@ -86,7 +87,7 @@ public final class ApplyDataType extends Handler {
 			}
 
 			DataTypeManager dtm = program.getDataTypeManager();
-			DataType dataType = resolveDataType(dtm, typeName);
+			DataType dataType = resolveDataType(tool, dtm, typeName);
 
 			if (dataType == null) {
 				return "Unknown data type: " + typeName;

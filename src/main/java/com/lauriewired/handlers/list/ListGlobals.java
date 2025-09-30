@@ -60,7 +60,7 @@ public final class ListGlobals extends Handler {
 	 * @return a formatted string listing global variables
 	 */
 	private String listGlobals(int offset, int limit, String filter) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}

@@ -6,10 +6,12 @@ import ghidra.program.model.listing.Program;
 
 import java.io.IOException;
 
+import static com.lauriewired.util.ParseUtils.sendResponse;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
- * Handler to check if the GhidraMCP plugin is running and if a program is loaded.
+ * Handler to check if the GhidraMCP plugin is running and if a program is
+ * loaded.
  * Responds with a message indicating the connection status.
  */
 public final class CheckConnection extends Handler {
@@ -23,7 +25,9 @@ public final class CheckConnection extends Handler {
 	}
 
 	/**
-	 * Handles the HTTP exchange by checking the connection status and sending the response.
+	 * Handles the HTTP exchange by checking the connection status and sending the
+	 * response.
+	 * 
 	 * @param exchange the HTTP exchange object
 	 * @throws IOException if an I/O error occurs
 	 */
@@ -34,10 +38,11 @@ public final class CheckConnection extends Handler {
 
 	/**
 	 * Checks the connection status and returns a message.
+	 * 
 	 * @return a string message indicating the connection status
 	 */
 	private String checkConnection() {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "Connected: GhidraMCP plugin running, but no program loaded";
 		}

@@ -17,12 +17,12 @@ import ghidra.program.model.symbol.ReferenceManager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.lauriewired.util.ParseUtils.parseQueryParams;
-import static com.lauriewired.util.ParseUtils.sendResponse;
+import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
@@ -63,7 +63,7 @@ public class GetFunctionCallees extends Handler {
 	 * @return a string representation of the callees
 	 */
 	private String getFunctionCallees(String functionName, int offset, int limit) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}

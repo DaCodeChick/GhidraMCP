@@ -12,10 +12,10 @@ import ghidra.program.model.symbol.SymbolIterator;
 import ghidra.program.model.symbol.SymbolTable;
 import ghidra.program.model.symbol.SymbolType;
 
+import java.io.IOException;
 import java.util.Map;
 
-import static com.lauriewired.util.ParseUtils.parseQueryParams;
-import static com.lauriewired.util.ParseUtils.sendResponse;
+import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
@@ -59,7 +59,7 @@ public final class GetFunctionLabels extends Handler {
 	 * @param limit        The maximum number of labels to return.
 	 */
 	private String getFunctionLabels(String functionName, int offset, int limit) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}

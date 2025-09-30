@@ -58,7 +58,7 @@ public class GetFunctionCallGraph extends Handler {
 	 * @return The function call graph as a string
 	 */
 	private String getFunctionCallGraph(String functionName, int depth, String direction) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}
@@ -130,8 +130,8 @@ public class GetFunctionCallGraph extends Handler {
 
 		// Find callees of this function
 		AddressSetView functionBody = function.getBody();
-		Listing listing = getCurrentProgram().getListing();
-		ReferenceManager refManager = getCurrentProgram().getReferenceManager();
+		Listing listing = getCurrentProgram(tool).getListing();
+		ReferenceManager refManager = getCurrentProgram(tool).getReferenceManager();
 
 		InstructionIterator instructions = listing.getInstructions(functionBody, true);
 		while (instructions.hasNext()) {
@@ -174,7 +174,7 @@ public class GetFunctionCallGraph extends Handler {
 		}
 
 		visited.add(function.getName());
-		ReferenceManager refManager = getCurrentProgram().getReferenceManager();
+		ReferenceManager refManager = getCurrentProgram(tool).getReferenceManager();
 
 		// Find callers of this function
 		ReferenceIterator refIter = refManager.getReferencesTo(function.getEntryPoint());

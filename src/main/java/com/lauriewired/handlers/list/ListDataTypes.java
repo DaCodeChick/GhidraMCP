@@ -56,7 +56,7 @@ public final class ListDataTypes extends Handler {
 	 * @return A formatted string listing the data types.
 	 */
 	private String listDataTypes(String category, int offset, int limit) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}

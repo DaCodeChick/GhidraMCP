@@ -5,9 +5,6 @@ import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.data.*;
 import ghidra.program.model.listing.Program;
-import ghidra.util.exception.DuplicateNameException;
-import ghidra.util.exception.InvalidNameException;
-import ghidra.util.task.TaskMonitor;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -82,7 +79,7 @@ public final class CreateUnion extends Handler {
 	 * @return A result message indicating success or failure.
 	 */
 	private String createUnionDirect(String name, Object fieldsObj) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (name == null || name.isEmpty())
@@ -175,7 +172,7 @@ public final class CreateUnion extends Handler {
 	 * @return A result message indicating success or failure.
 	 */
 	private String createUnion(String name, String fieldsJson) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (name == null || name.isEmpty())
@@ -203,7 +200,7 @@ public final class CreateUnion extends Handler {
 
 					// Process each field for the union (use resolveDataType like structs do)
 					for (FieldDefinition field : fields) {
-						DataType dt = resolveDataType(dtm, field.type);
+						DataType dt = resolveDataType(tool, dtm, field.type);
 						if (dt != null) {
 							union.add(dt, field.name, null);
 							result.append("Added field: ").append(field.name).append(" (").append(field.type)

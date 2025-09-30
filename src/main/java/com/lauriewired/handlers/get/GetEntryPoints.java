@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
@@ -48,7 +49,7 @@ public class GetEntryPoints extends Handler {
 	 * @return A formatted string of entry points or a message if none found
 	 */
 	private String getEntryPoints() {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}
@@ -124,4 +125,44 @@ public class GetEntryPoints extends Handler {
 
 		return String.join("\n", entryPoints);
 	}
+
+	/**
+	 * Formats the entry point information for a given symbol.
+	 * 
+	 * @param symbol The symbol to format
+	 * @return A formatted string with symbol details
+	 */
+	private String formatEntryPoint(Symbol symbol) {
+        StringBuilder info = new StringBuilder();
+        info.append(symbol.getName());
+        info.append(" @ ").append(symbol.getAddress());
+        info.append(" [").append(symbol.getSymbolType()).append("]");
+        
+        // Add additional context if it's a function
+        if (symbol.getSymbolType() == SymbolType.FUNCTION) {
+            Function func = (Function) symbol.getObject();
+            if (func != null) {
+                info.append(" (").append(func.getParameterCount()).append(" params)");
+            }
+        }
+        
+        return info.toString();
+    }
+	
+	/**
+	 * Checks if the list of entry points already contains an entry for the given address.
+	 * 
+	 * @param entryPoints The list of entry points to check
+	 * @param address     The address to look for
+	 * @return True if the address is found, false otherwise
+	 */
+	private boolean containsAddress(List<String> entryPoints, Address address) {
+        String addrStr = address.toString();
+        for (String entry : entryPoints) {
+            if (entry.contains("@ " + addrStr)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

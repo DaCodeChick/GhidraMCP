@@ -45,7 +45,7 @@ public final class CreateLabel extends Handler {
 	}
 
 	private String createLabel(String addressStr, String labelName) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}

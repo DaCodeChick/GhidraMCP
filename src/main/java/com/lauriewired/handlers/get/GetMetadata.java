@@ -8,6 +8,7 @@ import ghidra.program.model.mem.MemoryBlock;
 
 import java.io.IOException;
 
+import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
@@ -51,7 +52,7 @@ public final class GetMetadata extends Handler {
 	 * @return A string containing the program metadata.
 	 */
 	private String getMetadata() {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}

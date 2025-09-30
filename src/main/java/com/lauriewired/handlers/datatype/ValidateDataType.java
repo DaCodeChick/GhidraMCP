@@ -13,6 +13,7 @@ import ghidra.program.model.mem.Memory;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.lauriewired.util.GhidraUtils.*;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
@@ -61,7 +62,7 @@ public final class ValidateDataType extends Handler {
 	 * @return A detailed validation report.
 	 */
 	private String validateDataType(String addressStr, String typeName) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (addressStr == null || addressStr.isEmpty())

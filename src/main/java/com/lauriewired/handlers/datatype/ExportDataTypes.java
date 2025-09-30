@@ -61,7 +61,7 @@ public final class ExportDataTypes extends Handler {
 	 * @return A string containing the exported data types.
 	 */
 	private String exportDataTypes(String format, String category) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 

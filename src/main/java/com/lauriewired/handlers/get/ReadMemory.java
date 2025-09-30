@@ -51,7 +51,7 @@ public final class ReadMemory extends Handler {
 	 */
 	private String readMemory(String addressStr, int length) {
 		try {
-			Program program = getCurrentProgram();
+			Program program = getCurrentProgram(tool);
 			if (program == null) {
 				return "{\"error\":\"No program loaded\"}";
 			}

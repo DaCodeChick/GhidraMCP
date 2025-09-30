@@ -103,7 +103,7 @@ public final class WriteBytes extends Handler {
 
 					Listing listing = program.getListing();
 					listing.clearCodeUnits(address, endAddress, false);
-					memory.WriteBytes(address, newBytes);
+					memory.setBytes(address, newBytes);
 
 					Disassembler disassembler = Disassembler.getDisassembler(program, TaskMonitor.DUMMY, null);
 					disassembler.disassemble(address, null);

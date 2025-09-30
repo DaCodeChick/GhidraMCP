@@ -54,7 +54,7 @@ public final class RenameGlobalVariable extends Handler {
 	 * @return true if the variable was renamed successfully, false otherwise
 	 */
 	private boolean renameGlobalVariable(String oldName, String newName) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return false;
 		}

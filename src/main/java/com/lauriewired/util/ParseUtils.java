@@ -27,14 +27,14 @@ public final class ParseUtils {
 	 */
 	public static class FieldDefinition {
 		/** Field name */
-        String name;
-
+		public String name;
+		
 		/** Field type */
-        String type;
+		public String type;
 
 		/** Field offset */
-        int offset;
-        
+		public int offset;
+
 		/**
 		 * Constructor
 		 * 
@@ -42,74 +42,74 @@ public final class ParseUtils {
 		 * @param type   The type of the field.
 		 * @param offset The offset of the field.
 		 */
-        public FieldDefinition(String name, String type, int offset) {
-            this.name = name;
-            this.type = type;
-            this.offset = offset;
-        }
-    }
+		public FieldDefinition(String name, String type, int offset) {
+			this.name = name;
+			this.type = type;
+			this.offset = offset;
+		}
+	}
 
 	public static List<FieldDefinition> parseFieldsJson(String fieldsJson) {
-        List<FieldDefinition> fields = new ArrayList<>();
-        
-        try {
-            // Remove outer brackets and whitespace
-            String content = fieldsJson.trim();
-            if (content.startsWith("[")) {
-                content = content.substring(1);
-            }
-            if (content.endsWith("]")) {
-                content = content.substring(0, content.length() - 1);
-            }
-            
-            // Split by field objects (simple parsing)
-            String[] fieldStrings = content.split("\\},\\s*\\{");
-            
-            for (String fieldStr : fieldStrings) {
-                // Clean up braces
-                fieldStr = fieldStr.replace("{", "").replace("}", "").trim();
-                
-                String name = null;
-                String type = null;
-                int offset = -1;
-                
-                // Parse key-value pairs
-                String[] pairs = fieldStr.split(",");
-                for (String pair : pairs) {
-                    String[] keyValue = pair.split(":");
-                    if (keyValue.length == 2) {
-                        String key = keyValue[0].trim().replace("\"", "");
-                        String value = keyValue[1].trim().replace("\"", "");
-                        
-                        switch (key) {
-                            case "name":
-                                name = value;
-                                break;
-                            case "type":
-                                type = value;
-                                break;
-                            case "offset":
-                                try {
-                                    offset = Integer.parseInt(value);
-                                } catch (NumberFormatException e) {
-                                    // Ignore invalid offset
-                                }
-                                break;
-                        }
-                    }
-                }
-                
-                if (name != null && type != null) {
-                    fields.add(new FieldDefinition(name, type, offset));
-                }
-            }
-        } catch (Exception e) {
-            // Return empty list on parse error
-        }
-        
-        return fields;
-    }
-	
+		List<FieldDefinition> fields = new ArrayList<>();
+
+		try {
+			// Remove outer brackets and whitespace
+			String content = fieldsJson.trim();
+			if (content.startsWith("[")) {
+				content = content.substring(1);
+			}
+			if (content.endsWith("]")) {
+				content = content.substring(0, content.length() - 1);
+			}
+
+			// Split by field objects (simple parsing)
+			String[] fieldStrings = content.split("\\},\\s*\\{");
+
+			for (String fieldStr : fieldStrings) {
+				// Clean up braces
+				fieldStr = fieldStr.replace("{", "").replace("}", "").trim();
+
+				String name = null;
+				String type = null;
+				int offset = -1;
+
+				// Parse key-value pairs
+				String[] pairs = fieldStr.split(",");
+				for (String pair : pairs) {
+					String[] keyValue = pair.split(":");
+					if (keyValue.length == 2) {
+						String key = keyValue[0].trim().replace("\"", "");
+						String value = keyValue[1].trim().replace("\"", "");
+
+						switch (key) {
+							case "name":
+								name = value;
+								break;
+							case "type":
+								type = value;
+								break;
+							case "offset":
+								try {
+									offset = Integer.parseInt(value);
+								} catch (NumberFormatException e) {
+									// Ignore invalid offset
+								}
+								break;
+						}
+					}
+				}
+
+				if (name != null && type != null) {
+					fields.add(new FieldDefinition(name, type, offset));
+				}
+			}
+		} catch (Exception e) {
+			// Return empty list on parse error
+		}
+
+		return fields;
+	}
+
 	/**
 	 * Parse query parameters from the request URI.
 	 * 
@@ -206,6 +206,70 @@ public final class ParseUtils {
 			return defaultValue;
 		}
 	}
+
+	/**
+	 * Parse JSON parameters from the request body.
+	 * 
+	 * @param exchange The HttpExchange object containing the request.
+	 * @return A map of JSON parameters where the key is the parameter name
+	 *         and the value is the parameter value (as Object).
+	 *         For example, for a body '{"key1": "value1", "key2": 123}',
+	 *         the map will contain {"key1": "value1", "key2": 123}
+	 * @throws IOException If an I/O error occurs while reading the request body.
+	 */
+	public static Map<String, Object> parseJsonParams(HttpExchange exchange) throws IOException {
+        byte[] body = exchange.getRequestBody().readAllBytes();
+        String bodyStr = new String(body, StandardCharsets.UTF_8);
+        
+        // Simple JSON parsing - this is a basic implementation
+        // In a production environment, you'd want to use a proper JSON library
+        Map<String, Object> result = new HashMap<>();
+        
+        if (bodyStr.trim().isEmpty()) {
+            return result;
+        }
+        
+        try {
+            // Remove outer braces and parse key-value pairs
+            String content = bodyStr.trim();
+            if (content.startsWith("{") && content.endsWith("}")) {
+                content = content.substring(1, content.length() - 1).trim();
+                
+                // Simple parsing - split by commas but handle nested objects/arrays
+                String[] parts = splitJsonPairs(content);
+                
+                for (String part : parts) {
+                    String[] kv = part.split(":", 2);
+                    if (kv.length == 2) {
+                        String key = kv[0].trim().replaceAll("^\"|\"$", "");
+                        String value = kv[1].trim();
+                        
+                        // Handle different value types
+                        if (value.startsWith("\"") && value.endsWith("\"")) {
+                            // String value
+                            result.put(key, value.substring(1, value.length() - 1));
+                        } else if (value.startsWith("[") && value.endsWith("]")) {
+                            // Array value - keep as string for now
+                            result.put(key, value);
+                        } else if (value.startsWith("{") && value.endsWith("}")) {
+                            // Object value - keep as string for now
+                            result.put(key, value);
+                        } else if (value.matches("\\d+")) {
+                            // Integer value
+                            result.put(key, Integer.parseInt(value));
+                        } else {
+                            // Default to string
+                            result.put(key, value);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Msg.error(ParseUtils.class, "Error parsing JSON: " + e.getMessage(), e);
+        }
+        
+        return result;
+    }
 
 	/**
 	 * Parse a JSON-like string of key-value pairs into a map.
@@ -359,4 +423,59 @@ public final class ParseUtils {
 		}
 		return out;
 	}
+
+	/**
+	 * Split a JSON string into key-value pairs, handling nested objects and arrays.
+	 * 
+	 * @param content The JSON string content (without outer braces).
+	 * @return An array of key-value pair strings.
+	 */
+	public static String[] splitJsonPairs(String content) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        int braceDepth = 0;
+        int bracketDepth = 0;
+        boolean inString = false;
+        boolean escaped = false;
+        
+        for (char c : content.toCharArray()) {
+            if (escaped) {
+                escaped = false;
+                current.append(c);
+                continue;
+            }
+            
+            if (c == '\\' && inString) {
+                escaped = true;
+                current.append(c);
+                continue;
+            }
+            
+            if (c == '"') {
+                inString = !inString;
+                current.append(c);
+                continue;
+            }
+            
+            if (!inString) {
+                if (c == '{') braceDepth++;
+                else if (c == '}') braceDepth--;
+                else if (c == '[') bracketDepth++;
+                else if (c == ']') bracketDepth--;
+                else if (c == ',' && braceDepth == 0 && bracketDepth == 0) {
+                    parts.add(current.toString().trim());
+                    current = new StringBuilder();
+                    continue;
+                }
+            }
+            
+            current.append(c);
+        }
+        
+        if (current.length() > 0) {
+            parts.add(current.toString().trim());
+        }
+        
+        return parts.toArray(new String[0]);
+    }
 }

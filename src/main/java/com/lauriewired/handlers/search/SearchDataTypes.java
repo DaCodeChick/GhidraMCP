@@ -60,7 +60,7 @@ public final class SearchDataTypes extends Handler {
 	 * @return A formatted string of matching data types or an error message.
 	 */
 	private String searchDataTypes(String pattern, int offset, int limit) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (pattern == null || pattern.isEmpty())

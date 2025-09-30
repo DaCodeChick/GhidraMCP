@@ -5,10 +5,10 @@ import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.data.Composite;
-import ghidra.program.model.data.Data;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.DataTypeComponent;
 import ghidra.program.model.data.Pointer;
+import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
 
 import java.io.IOException;
@@ -55,7 +55,7 @@ public final class AnalyzeDataTypes extends Handler {
 	 * @return A string representation of the data type analysis.
 	 */
 	private String analyzeDataTypes(String addressStr, int depth) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (addressStr == null || addressStr.isEmpty())

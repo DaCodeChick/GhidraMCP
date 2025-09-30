@@ -3,9 +3,14 @@ package com.lauriewired.handlers.get;
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
+import ghidra.program.model.data.DataType;
+import ghidra.program.model.data.DataTypeManager;
+import ghidra.program.model.listing.Program;
 
 import java.io.IOException;
+import java.util.Map;
 
+import static com.lauriewired.util.GhidraUtils.*;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
@@ -52,7 +57,7 @@ public final class GetEnumValues extends Handler {
 	 *         message if not found.
 	 */
 	private String getEnumValues(String enumName) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (enumName == null || enumName.isEmpty())

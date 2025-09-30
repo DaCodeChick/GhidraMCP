@@ -44,7 +44,7 @@ public final class GhidraUtils {
 	 * @param dt the data type
 	 * @return the category name
 	 */
-	public String getCategoryName(DataType dt) {
+	public static String getCategoryName(DataType dt) {
 		if (dt.getCategoryPath() == null) {
 			return "builtin";
 		}
@@ -96,6 +96,49 @@ public final class GhidraUtils {
 		Msg.warn(GhidraUtils.class, "Unknown type: " + typeName + ", defaulting to int");
 		return dtm.getDataType("/int");
 	}
+
+	/**
+	 * Searches for a data type by name in all categories of the given DataTypeManager.
+	 *
+	 * @param dtm      The DataTypeManager to search in
+	 * @param typeName The name of the data type to search for
+	 * @return The found DataType, or null if not found
+	 */
+	public static DataType findDataTypeByNameInAllCategories(DataTypeManager dtm, String typeName) {
+        // Try exact match first
+        DataType result = searchByNameInAllCategories(dtm, typeName);
+        if (result != null) {
+            return result;
+        }
+
+        // Try lowercase
+        return searchByNameInAllCategories(dtm, typeName.toLowerCase());
+    }
+
+	/**
+	 * Helper method to search for a data type by name in all categories of the given DataTypeManager.
+	 * This method performs a case-sensitive search first, then a case-insensitive search.
+	 *
+	 * @param dtm  The DataTypeManager to search in
+	 * @param name The name of the data type to search for
+	 * @return The found DataType, or null if not found
+	 */
+	public static DataType searchByNameInAllCategories(DataTypeManager dtm, String name) {
+        // Get all data types from the manager
+        Iterator<DataType> allTypes = dtm.getAllDataTypes();
+        while (allTypes.hasNext()) {
+            DataType dt = allTypes.next();
+            // Check if the name matches exactly (case-sensitive) 
+            if (dt.getName().equals(name)) {
+                return dt;
+            }
+            // For case-insensitive, we want an exact match except for case
+            if (dt.getName().equalsIgnoreCase(name)) {
+                return dt;
+            }
+        }
+        return null;
+    }
 
 	/**
 	 * Sets a comment at the specified address in the current program.

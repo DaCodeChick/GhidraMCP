@@ -62,7 +62,7 @@ public final class CloneDataType extends Handler {
 	 * @return A message indicating success or failure.
 	 */
 	private String cloneDataType(String sourceType, String newName) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (sourceType == null || sourceType.isEmpty())

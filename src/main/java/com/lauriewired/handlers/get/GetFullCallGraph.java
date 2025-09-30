@@ -53,7 +53,7 @@ public class GetFullCallGraph extends Handler {
 	 * @return The generated call graph as a string
 	 */
 	private String getFullCallGraph(String format, int limit) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}

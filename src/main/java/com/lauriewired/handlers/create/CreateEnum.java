@@ -64,7 +64,7 @@ public final class CreateEnum extends Handler {
 	 * @return A success or error message.
 	 */
 	private String createEnum(String name, String valuesJson, int size) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}

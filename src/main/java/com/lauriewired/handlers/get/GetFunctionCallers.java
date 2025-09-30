@@ -66,7 +66,7 @@ public class GetFunctionCallers extends Handler {
 	 * @return A string representation of the function callers
 	 */
 	private String getFunctionCallers(String functionName, int offset, int limit) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}

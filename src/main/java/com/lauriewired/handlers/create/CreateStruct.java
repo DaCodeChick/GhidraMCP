@@ -55,7 +55,7 @@ public final class CreateStruct extends Handler {
 	 * @return A message indicating success or failure.
 	 */
 	private String createStruct(String name, String fieldsJson) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}
@@ -93,7 +93,7 @@ public final class CreateStruct extends Handler {
 
 				// Add fields sequentially for simplicity
 				for (FieldDefinition field : fields) {
-					DataType fieldType = resolveDataType(dtm, field.type);
+					DataType fieldType = resolveDataType(tool, dtm, field.type);
 					if (fieldType == null) {
 						return "Unknown field type: " + field.type;
 					}

@@ -3,9 +3,13 @@ package com.lauriewired.handlers.get;
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
+import ghidra.program.model.data.*;
+import ghidra.program.model.listing.Program;
 
 import java.io.IOException;
+import java.util.Map;
 
+import static com.lauriewired.util.GhidraUtils.*;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
@@ -48,7 +52,7 @@ public final class GetStructLayout extends Handler {
 	 *         message if not found or invalid.
 	 */
 	private String getStructLayout(String structName) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (structName == null || structName.isEmpty())

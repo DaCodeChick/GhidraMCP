@@ -58,7 +58,7 @@ public final class RenameLabel extends Handler {
 	 * @return A message indicating success or failure of the operation.
 	 */
 	private String renameLabel(String addressStr, String oldName, String newName) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "No program loaded";
 		}

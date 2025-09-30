@@ -10,6 +10,7 @@ import ghidra.program.model.listing.Program;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.lauriewired.util.GhidraUtils.findDataTypeByNameInAllCategories;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
@@ -50,7 +51,7 @@ public final class GetTypeSize extends Handler {
 	 * @return A string containing the size of the data type or an error message if not found.
 	 */
 	private String getTypeSize(String typeName) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null)
 			return "No program loaded";
 		if (typeName == null || typeName.isEmpty())
