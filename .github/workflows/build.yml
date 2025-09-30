@@ -31,7 +31,7 @@ jobs:
         echo "GHIDRA_INSTALL_DIR=$GHIDRA_DIR" >> $GITHUB_ENV
         
     - name: Build with Gradle
-      run: ./gradlew build -PGHIDRA_INSTALL_DIR=$GHIDRA_INSTALL_DIR
+      run: ./gradle build -PGHIDRA_INSTALL_DIR=$GHIDRA_INSTALL_DIR
       
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
