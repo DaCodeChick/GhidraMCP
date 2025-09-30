@@ -933,6 +933,21 @@ def mcp_ghidra_export_data_types(format: str = "c", category: str = None) -> str
     return safe_get("export_data_types", params)
 
 @mcp.tool()
+def get_data_by_label(label: str) -> str:
+    """
+    Get information about a data label.
+
+    Args:
+        label: Exact symbol / label name to look up in the program.
+
+    Returns:
+        A newline-separated string.  
+        Each line has:  "<label> -> <address> : <value-representation>"
+        If the label is not found, an explanatory message is returned.
+    """
+    return "\n".join(safe_get("get_data_by_label", {"label": label}))
+
+@mcp.tool()
 def mcp_ghidra_import_data_types(source: str, format: str = "c") -> str:
     """
     Import data types from various sources (placeholder for future implementation).
@@ -945,6 +960,41 @@ def mcp_ghidra_import_data_types(source: str, format: str = "c") -> str:
         Import results and status
     """
     return safe_post("import_data_types", {"source": source, "format": format})
+
+@mcp.tool()
+def search_bytes(bytes_hex: str, offset: int = 0, limit: int = 100) -> list:
+    """
+    Search the whole program for a specific byte sequence.
+
+    Args:
+        bytes_hex: Byte sequence encoded as a hex string
+                   (e.g. "DEADBEEF" or "DE AD BE EF").
+        offset:    Pagination offset for results (default: 0).
+        limit:     Maximum number of hit addresses to return (default: 100).
+
+    Returns:
+        A list of addresses (as hex strings) where the sequence was found,
+        subject to pagination.  If no hits, an explanatory message list
+        such as ["No matches found"] is returned.
+    """
+    return safe_get(
+        "search_bytes",
+        {"bytes": bytes_hex, "offset": offset, "limit": limit},
+    )
+
+@mcp.tool()
+def write_bytes(address: str, bytes_hex: str) -> str:
+    """
+    Writes a sequence of bytes to the specified address in the program's memory.
+
+    Args:
+        address: Destination address (e.g., "0x140001000")
+        bytes_hex: Sequence of space-separated bytes in hexadecimal format (e.g., "90 90 90 90")
+
+    Returns:
+        Result of the operation (e.g., "Bytes written successfully" or a detailed error)
+    """
+    return safe_post("write_bytes", {"address": address, "bytes": bytes_hex})
 
 def main():
     parser = argparse.ArgumentParser(description="MCP server for Ghidra")
