@@ -48,9 +48,9 @@ public final class CloneDataType extends Handler {
 	 */
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
-		Map<String, String> params = parsePostParams(exchange);
-		String sourceType = params.get("source_type");
-		String newName = params.get("new_name");
+		Map<String, Object> params = parseJsonParams(exchange);
+        String sourceType = (String) params.get("source_type");
+        String newName = (String) params.get("new_name");
 		sendResponse(exchange, cloneDataType(sourceType, newName));
 	}
 
