@@ -17,8 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.lauriewired.util.ParseUtils.parsePostParams;
-import static com.lauriewired.util.ParseUtils.sendResponse;
+import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
@@ -82,12 +81,13 @@ public final class SetFunctionPrototype extends Handler {
 	 */
 	@Override
 	public void handle(HttpExchange exchange) throws Exception {
-		Map<String, String> params = parsePostParams(exchange);
-		String functionAddress = params.get("function_address");
-		String prototype = params.get("prototype");
+		Map<String, Object> params = parseJsonParams(exchange);
+            String functionAddress = (String) params.get("function_address");
+            String prototype = (String) params.get("prototype");
+            String callingConvention = (String) params.get("calling_convention");
 
 		// Call the set prototype function and get detailed result
-		PrototypeResult result = setFunctionPrototype(functionAddress, prototype);
+		PrototypeResult result = setFunctionPrototype(functionAddress, prototype, callingConvention);
 
 		if (result.isSuccess()) {
 			// Even with successful operations, include any warning messages for debugging
@@ -107,9 +107,10 @@ public final class SetFunctionPrototype extends Handler {
 	 *
 	 * @param functionAddrStr The address of the function as a string
 	 * @param prototype       The prototype string to set
+	 * @param callingConvention The calling convention to set (optional)
 	 * @return PrototypeResult indicating success or failure with error message
 	 */
-	private PrototypeResult setFunctionPrototype(String functionAddrStr, String prototype) {
+	private PrototypeResult setFunctionPrototype(String functionAddrStr, String prototype, String callingConvention) {
 		// Input validation
 		Program program = getCurrentProgram(tool);
 		if (program == null)
@@ -126,7 +127,7 @@ public final class SetFunctionPrototype extends Handler {
 
 		try {
 			SwingUtilities.invokeAndWait(
-					() -> applyFunctionPrototype(program, functionAddrStr, prototype, success, errorMessage));
+					() -> applyFunctionPrototype(program, functionAddrStr, prototype, callingConvention, success, errorMessage));
 		} catch (InterruptedException | InvocationTargetException e) {
 			String msg = "Failed to set function prototype on Swing thread: " + e.getMessage();
 			errorMessage.append(msg);
@@ -142,11 +143,12 @@ public final class SetFunctionPrototype extends Handler {
 	 * @param program         The current program
 	 * @param functionAddrStr The address of the function as a string
 	 * @param prototype       The prototype string to set
+	 * @param callingConvention The calling convention to set (optional)
 	 * @param success         Atomic boolean to indicate success
 	 * @param errorMessage    StringBuilder to collect error messages
 	 */
 	private void applyFunctionPrototype(Program program, String functionAddrStr, String prototype,
-			AtomicBoolean success, StringBuilder errorMessage) {
+			String callingConvention, AtomicBoolean success, StringBuilder errorMessage) {
 		try {
 			// Get the address and function
 			Address addr = program.getAddressFactory().getAddress(functionAddrStr);
@@ -165,7 +167,7 @@ public final class SetFunctionPrototype extends Handler {
 			addPrototypeComment(program, func, prototype);
 
 			// Use ApplyFunctionSignatureCmd to parse and apply the signature
-			parseFunctionSignatureAndApply(program, addr, prototype, success, errorMessage);
+			parseFunctionSignatureAndApply(program, addr, prototype, callingConvention, success, errorMessage);
 
 		} catch (Exception e) {
 			String msg = "Error setting function prototype: " + e.getMessage();
@@ -200,11 +202,12 @@ public final class SetFunctionPrototype extends Handler {
 	 * @param program      The current program
 	 * @param addr         The address of the function
 	 * @param prototype    The prototype string to set
+	 * @param callingConvention The calling convention to set (optional)
 	 * @param success      Atomic boolean to indicate success
 	 * @param errorMessage StringBuilder to collect error messages
 	 */
 	private void parseFunctionSignatureAndApply(Program program, Address addr, String prototype,
-			AtomicBoolean success, StringBuilder errorMessage) {
+			String callingConvention, AtomicBoolean success, StringBuilder errorMessage) {
 		// Use ApplyFunctionSignatureCmd to parse and apply the signature
 		int txProto = program.startTransaction("Set function prototype");
 		try {
@@ -237,6 +240,10 @@ public final class SetFunctionPrototype extends Handler {
 			boolean cmdResult = cmd.applyTo(program, new ConsoleTaskMonitor());
 
 			if (cmdResult) {
+				// Apply calling convention if specified
+                if (callingConvention != null && !callingConvention.isEmpty()) {
+                    applyCallingConvention(program, addr, callingConvention, errorMessage);
+                }
 				success.set(true);
 				Msg.info(this, "Successfully applied function signature");
 			} else {
@@ -252,4 +259,62 @@ public final class SetFunctionPrototype extends Handler {
 			program.endTransaction(txProto, success.get());
 		}
 	}
+
+	/**
+	 * Apply the specified calling convention to the function at the given address
+	 *
+	 * @param program         The current program
+	 * @param addr            The address of the function
+	 * @param callingConvention The calling convention to set
+	 * @param errorMessage    StringBuilder to collect error messages
+	 */
+	private void applyCallingConvention(Program program, Address addr, String callingConvention, StringBuilder errorMessage) {
+        try {
+            Function func = getFunctionForAddress(program, addr);
+            if (func == null) {
+                errorMessage.append("Could not find function to set calling convention");
+                return;
+            }
+
+            // Get the program's calling convention manager
+            ghidra.program.model.lang.CompilerSpec compilerSpec = program.getCompilerSpec();
+            ghidra.program.model.lang.PrototypeModel callingConv = null;
+            
+            // Get all available calling conventions
+            ghidra.program.model.lang.PrototypeModel[] available = compilerSpec.getCallingConventions();
+            
+            // Try to find matching calling convention by name
+            String targetName = callingConvention.toLowerCase();
+            for (ghidra.program.model.lang.PrototypeModel model : available) {
+                String modelName = model.getName().toLowerCase();
+                if (modelName.equals(targetName) || 
+                    modelName.equals("__" + targetName) ||
+                    modelName.replace("__", "").equals(targetName.replace("__", ""))) {
+                    callingConv = model;
+                    break;
+                }
+            }
+            
+            if (callingConv != null) {
+                func.setCallingConvention(callingConv.getName());
+                Msg.info(this, "Set calling convention to: " + callingConv.getName());
+            } else {
+                String msg = "Unknown calling convention: " + callingConvention;
+                errorMessage.append(msg);
+                Msg.warn(this, msg);
+                
+                // List available calling conventions for debugging
+                StringBuilder availList = new StringBuilder("Available: ");
+                for (ghidra.program.model.lang.PrototypeModel model : available) {
+                    availList.append(model.getName()).append(", ");
+                }
+                Msg.info(this, availList.toString());
+            }
+            
+        } catch (Exception e) {
+            String msg = "Error setting calling convention: " + e.getMessage();
+            errorMessage.append(msg);
+            Msg.error(this, msg, e);
+        }
+    }
 }

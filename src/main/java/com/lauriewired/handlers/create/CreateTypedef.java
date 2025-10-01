@@ -43,9 +43,9 @@ public final class CreateTypedef extends Handler {
 	 */
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
-		Map<String, String> params = parsePostParams(exchange);
-		String name = params.get("name");
-		String baseType = params.get("base_type");
+		Map<String, Object> params = parseJsonParams(exchange);
+        String name = (String) params.get("name");
+        String baseType = (String) params.get("base_type");
 		sendResponse(exchange, createTypedef(name, baseType));
 	}
 
@@ -73,7 +73,22 @@ public final class CreateTypedef extends Handler {
 				int tx = program.startTransaction("Create typedef");
 				try {
 					DataTypeManager dtm = program.getDataTypeManager();
-					DataType base = findDataTypeByNameInAllCategories(dtm, baseType);
+					DataType base = null;
+                    
+                    // Handle pointer syntax (e.g., "UnitAny *")
+                    if (baseType.endsWith(" *") || baseType.endsWith("*")) {
+                        String baseTypeName = baseType.replace(" *", "").replace("*", "").trim();
+                        DataType baseDataType = findDataTypeByNameInAllCategories(dtm, baseTypeName);
+                        if (baseDataType != null) {
+                            base = new PointerDataType(baseDataType);
+                        } else {
+                            result.append("Base type not found for pointer: ").append(baseTypeName);
+                            return;
+                        }
+                    } else {
+                        // Regular type lookup
+                        base = findDataTypeByNameInAllCategories(dtm, baseType);
+                    }
 
 					if (base == null) {
 						result.append("Base type not found: ").append(baseType);
