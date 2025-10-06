@@ -1,13 +1,13 @@
 package com.lauriewired;
 
 import com.lauriewired.handlers.Handler;
-import ghidra.framework.plugintool.Plugin;
-import ghidra.framework.plugintool.PluginTool;
 import ghidra.app.plugin.PluginCategoryNames;
+import ghidra.framework.options.Options;
+import ghidra.framework.plugintool.Plugin;
 import ghidra.framework.plugintool.PluginInfo;
+import ghidra.framework.plugintool.PluginTool;
 import ghidra.framework.plugintool.util.PluginStatus;
 import ghidra.util.Msg;
-import ghidra.framework.options.Options;
 
 import com.sun.net.httpserver.HttpServer;
 import org.reflections.Reflections;
@@ -24,7 +24,6 @@ import java.util.*;
  */
 @PluginInfo(status = PluginStatus.RELEASED, packageName = ghidra.app.DeveloperPluginPackage.NAME, category = PluginCategoryNames.ANALYSIS, shortDescription = "HTTP server plugin", description = "Starts an embedded HTTP server to expose program data. Port configurable via Tool Options.")
 public class GhidraMCPPlugin extends Plugin {
-
 	/** The embedded HTTP server instance that handles all API requests */
 	private HttpServer server;
 
@@ -48,7 +47,7 @@ public class GhidraMCPPlugin extends Plugin {
 
 	/** Default decompile timeout in seconds */
 	private static final int DEFAULT_DECOMPILE_TIMEOUT = 30;
-
+	
 	/** HashMap to store all registered API routes */
 	private static final HashMap<String, Handler> routes = new HashMap<>();
 
