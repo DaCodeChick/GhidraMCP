@@ -1,8 +1,41 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context
+from ..context import ghidra_context, GhidraValidationError
 
 def register_get_tools(mcp: FastMCP):
 	"""Register the get endpoints."""
+
+	@mcp.tool()
+	def decrypt_strings_auto() -> list:
+		"""
+		Automatically identify and attempt to decrypt common string obfuscation patterns.
+		Detects XOR encoding, Base64, ROT13, and simple stack strings.
+		
+		Returns:
+			List of decrypted strings with their locations and decryption method
+		"""
+		return ghidra_context.http_client.safe_get("decrypt_strings_auto")
+
+	@mcp.tool()
+	def extract_iocs() -> dict:
+		"""
+		Extract Indicators of Compromise (IOCs) from the binary.
+		Finds IP addresses, URLs, file paths, registry keys, and other artifacts.
+		
+		Returns:
+			Dictionary of IOCs organized by type (IPs, URLs, files, etc.)
+		"""
+		return ghidra_context.http_client.safe_get("extract_iocs")
+
+	@mcp.tool()
+	def extract_iocs_with_context() -> dict:
+		"""
+		Enhanced IOC extraction with analysis context and confidence scoring.
+		Provides context about where/how IOCs are used and categorizes them.
+		
+		Returns:
+			Dictionary of IOCs with context, confidence scores, and usage analysis
+		"""
+		return ghidra_context.http_client.safe_get("extract_iocs_with_context")
 
 	@mcp.tool()
 	def get_current_address() -> str:
@@ -270,4 +303,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of references to the specified address
 		"""
+		if not ghidra_context.validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
+
 		return ghidra_context.http_client.safe_get("xrefs_to", {"address": address, "offset": offset, "limit": limit})

@@ -1,3 +1,4 @@
+from .analyze import register_analyze_tools
 #from .bsim import register_bsim_tools
 from .comment import register_comment_tools
 from .create import register_create_tools
@@ -11,7 +12,8 @@ from .search import register_search_tools
 from .set import register_set_tools
 
 __all__ = [
-	# "register_bsim_tools",
+	"register_analyze_tools",
+	#"register_bsim_tools",
 	"register_comment_tools",
 	"register_create_tools",
 	"register_datatype_tools",

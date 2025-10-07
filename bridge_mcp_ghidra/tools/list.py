@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context
+from ..context import ghidra_context, GhidraValidationError
 
 def register_list_tools(mcp: FastMCP):
 	"""Register list tools to MCP client."""
@@ -53,6 +53,30 @@ def register_list_tools(mcp: FastMCP):
 			params["category"] = category
 		return ghidra_context.http_client.safe_get("list_data_types", params)
 
+	@mcp.tool()
+	def list_data_type_categories(offset: int = 0, limit: int = 100) -> str:
+		"""
+		List all data type categories.
+		
+		This tool lists all available data type categories with pagination.
+		
+		Args:
+			offset: Pagination offset (default: 0)
+			limit: Maximum number of categories to return (default: 100)
+			
+		Returns:
+			List of data type categories
+		"""
+		if not isinstance(offset, int) or offset < 0:
+			raise GhidraValidationError("Offset must be a non-negative integer")
+		if not isinstance(limit, int) or limit <= 0:
+			raise GhidraValidationError("Limit must be a positive integer")
+
+		return "\n".join(ghidra_context.http_client.safe_get("list_data_type_categories", {
+			"offset": offset,
+			"limit": limit
+		}))
+	
 	@mcp.tool()
 	def list_exports(offset: int = 0, limit: int = 100) -> list:
 		"""

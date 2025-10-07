@@ -5,20 +5,6 @@ def register_datatype_tools(mcp: FastMCP):
 	"""Register data type tools to MCP instance."""
 
 	@mcp.tool()
-	def analyze_data_types(address: str, depth: int = 1) -> list:
-		"""
-		Analyze data types at a given address with specified depth.
-		
-		Args:
-			address: Target address in hex format (e.g., "0x1400010a0")
-			depth: Analysis depth for following pointers and references (default: 1)
-			
-		Returns:
-			Detailed analysis of data types at the specified address
-		"""
-		return ghidra_context.http_client.safe_get("analyze_data_types", {"address": address, "depth": depth})
-
-	@mcp.tool()
 	def clone_data_type(source_type: str, new_name: str) -> str:
 		"""
 		Clone/copy an existing data type with a new name.

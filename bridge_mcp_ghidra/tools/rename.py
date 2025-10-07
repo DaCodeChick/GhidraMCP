@@ -1,8 +1,28 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context
+from ..context import ghidra_context, GhidraValidationError
 
 def register_rename_tools(mcp: FastMCP):
 	"""Register rename tools."""
+
+	@mcp.tool()
+	def batch_rename_functions(renames: dict) -> dict:
+		"""
+		Rename multiple functions atomically.
+		
+		Args:
+			renames: Dictionary mapping old names to new names
+			
+		Returns:
+			Dictionary with rename results and any errors
+		"""
+		# Validate all function names
+		for old_name, new_name in renames.items():
+			if not ghidra_context.validate_function_name(old_name):
+				raise GhidraValidationError(f"Invalid old function name: {old_name}")
+			if not ghidra_context.validate_function_name(new_name):
+				raise GhidraValidationError(f"Invalid new function name: {new_name}")
+
+		return ghidra_context.http_client.safe_get("batch_rename_functions", {"renames": str(renames)})
 
 	@mcp.tool()
 	def rename_data(address: str, new_name: str) -> str:

@@ -1,6 +1,6 @@
 import json
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context
+from ..context import ghidra_context, GhidraValidationError
 
 def register_create_tools(mcp: FastMCP):
 	"""Register create tools for Ghidra context."""
@@ -21,6 +21,55 @@ def register_create_tools(mcp: FastMCP):
 		return ghidra_context.http_client.safe_post("auto_create_struct", {"address": address, "size": size, "name": name})
 
 	@mcp.tool()
+	def create_array_type(base_type: str, length: int, name: str = None) -> str:
+		"""
+		Create an array data type.
+		
+		This tool creates a new array data type based on an existing base type
+		with the specified length.
+		
+		Args:
+			base_type: Name of the base data type for the array
+			length: Number of elements in the array
+			name: Optional name for the array type
+			
+		Returns:
+			Success or failure message with created array type details
+		"""
+		if not base_type or not isinstance(base_type, str):
+			raise GhidraValidationError("Base type is required and must be a string")
+		if not isinstance(length, int) or length <= 0:
+			raise GhidraValidationError("Length must be a positive integer")
+		
+		data = {
+			"base_type": base_type,
+			"length": length
+		}
+		if name:
+			data["name"] = name
+		
+		return ghidra_context.http_client.safe_post_json("create_array_type", data)
+
+
+	@mcp.tool()
+	def create_data_type_category(category_path: str) -> str:
+		"""
+		Create a new data type category.
+		
+		This tool creates a new category for organizing data types.
+		
+		Args:
+			category_path: Path for the new category (e.g., "MyTypes" or "MyTypes/SubCategory")
+			
+		Returns:
+			Success or failure message with category creation details
+		"""
+		if not category_path or not isinstance(category_path, str):
+			raise GhidraValidationError("Category path is required and must be a string")
+
+		return ghidra_context.http_client.safe_post_json("create_data_type_category", {"category_path": category_path})
+
+	@mcp.tool()
 	def create_enum(name: str, values: dict, size: int = 4) -> str:
 		"""
 		Create a new enumeration data type with name-value pairs.
@@ -39,8 +88,38 @@ def register_create_tools(mcp: FastMCP):
 		Example:
 			values = {"STATE_IDLE": 0, "STATE_RUNNING": 1, "STATE_STOPPED": 2}
 		"""
-		return ghidra_context.http_client.safe_post("create_enum", {"name": name, "values": values, "size": size})
+		return ghidra_context.http_client.safe_post_json("create_enum", {"name": name, "values": values, "size": size})
 
+	@mcp.tool()
+	def create_function_signature(name: str, return_type: str, parameters: str = None) -> str:
+		"""
+		Create a function signature data type.
+		
+		This tool creates a new function signature data type that can be used
+		for function pointers and type definitions.
+		
+		Args:
+			name: Name for the function signature
+			return_type: Return type of the function
+			parameters: Optional JSON string describing parameters (e.g., '[{"name": "param1", "type": "int"}]')
+			
+		Returns:
+			Success or failure message with function signature creation details
+		"""
+		if not name or not isinstance(name, str):
+			raise GhidraValidationError("Function name is required and must be a string")
+		if not return_type or not isinstance(return_type, str):
+			raise GhidraValidationError("Return type is required and must be a string")
+		
+		data = {
+			"name": name,
+			"return_type": return_type
+		}
+		if parameters:
+			data["parameters"] = parameters
+		
+		return ghidra_context.http_client.safe_post_json("create_function_signature", data)
+	
 	@mcp.tool()
 	def create_label(address: str, name: str) -> str:
 		"""
@@ -60,7 +139,30 @@ def register_create_tools(mcp: FastMCP):
 			"address": address, 
 			"name": name
 		})
-	
+
+	@mcp.tool()
+	def create_pointer_type(base_type: str, name: str = None) -> str:
+		"""
+		Create a pointer data type.
+		
+		This tool creates a new pointer data type pointing to the specified base type.
+		
+		Args:
+			base_type: Name of the base data type for the pointer
+			name: Optional name for the pointer type
+			
+		Returns:
+			Success or failure message with created pointer type details
+		"""
+		if not base_type or not isinstance(base_type, str):
+			raise GhidraValidationError("Base type is required and must be a string")
+		
+		data = {"base_type": base_type}
+		if name:
+			data["name"] = name
+
+		return ghidra_context.http_client.safe_post_json("create_pointer_type", data)
+
 	@mcp.tool()
 	def create_struct(name: str, fields: list) -> str:
 		"""
@@ -87,7 +189,7 @@ def register_create_tools(mcp: FastMCP):
 				{"name": "flags", "type": "DWORD"}
 			]
 		"""
-		return ghidra_context.http_client.safe_post("create_struct", {"name": name, "fields": fields})
+		return ghidra_context.http_client.safe_post_json("create_struct", {"name": name, "fields": fields})
 
 	@mcp.tool()
 	def create_typedef(name: str, base_type: str) -> str:

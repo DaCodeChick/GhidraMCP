@@ -1,5 +1,4 @@
 from mcp.server.fastmcp import FastMCP
-import requests
 from urllib.parse import urljoin
 from ..context import ghidra_context
 
@@ -15,7 +14,7 @@ def register_misc_tools(mcp: FastMCP):
 			Connection status message
 		"""
 		try:
-			response = requests.get(urljoin(ghidra_context.server_url, "check_connection"), timeout=ghidra_context.request_timeout)
+			response = ghidra_context.http_client.session.get(urljoin(ghidra_context.server_url, "check_connection"), timeout=ghidra_context.request_timeout)
 			if response.ok:
 				return response.text.strip()
 			else:
