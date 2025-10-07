@@ -61,8 +61,11 @@ pip install -r requirements.txt && pip install -r requirements-test.txt
     pip install -r requirements.txt
     pip install -r requirements-test.txt
 ```
+
 ## 🧪 Testing Dependencies Verified
+
 All test requirements have been verified against the current test suite:
+
 ### **Core Testing** ✅
 - `pytest>=7.0.0` - Main testing framework
 - `requests-mock>=1.10.0` - HTTP mocking for API tests
@@ -83,6 +86,7 @@ All test requirements have been verified against the current test suite:
 ```bash
 # Verify installation
 python -c "import pytest, requests, mcp; print('All core dependencies working!')"
+
 # Run tests to verify complete setup
 python -m pytest tests/ -v
 ```

@@ -58,3 +58,4 @@ analysis = mcp_ghidra_analyze_data_types("0x401000", depth=2)
 ---
 
 **Note**: Examples require a running Ghidra instance with the GhidraMCP plugin loaded and a binary file analyzed.
+
