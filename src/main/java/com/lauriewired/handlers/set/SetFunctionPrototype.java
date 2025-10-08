@@ -9,6 +9,10 @@ import ghidra.program.model.listing.CommentType;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.SourceType;
+import ghidra.program.util.ApplyFunctionSignatureCmd;
+import ghidra.program.util.FunctionDefinitionDataType;
+import ghidra.program.util.FunctionSignatureParser;
+import ghidra.util.datastruct.DataTypeManagerService;
 import ghidra.util.Msg;
 import ghidra.util.task.ConsoleTaskMonitor;
 
@@ -101,6 +105,16 @@ public final class SetFunctionPrototype extends Handler {
 			sendResponse(exchange, "Failed to set function prototype: " + result.getErrorMessage());
 		}
 	}
+
+	/**
+	 * Set the function prototype for a given function address without calling convention
+	 * @param functionAddrStr The address of the function as a string
+	 * @param prototype       The prototype string to set
+	 * @return PrototypeResult indicating success or failure with error message
+	 */
+	private PrototypeResult setFunctionPrototype(String functionAddrStr, String prototype) {
+        return setFunctionPrototype(functionAddrStr, prototype, null);
+    }
 
 	/**
 	 * Set the function prototype for a given function address
@@ -215,15 +229,15 @@ public final class SetFunctionPrototype extends Handler {
 			DataTypeManager dtm = program.getDataTypeManager();
 
 			// Get data type manager service
-			ghidra.app.services.DataTypeManagerService dtms = tool
-					.getService(ghidra.app.services.DataTypeManagerService.class);
+			DataTypeManagerService dtms = tool
+					.getService(DataTypeManagerService.class);
 
 			// Create function signature parser
-			ghidra.app.util.parser.FunctionSignatureParser parser = new ghidra.app.util.parser.FunctionSignatureParser(
+			FunctionSignatureParser parser = new FunctionSignatureParser(
 					dtm, dtms);
 
 			// Parse the prototype into a function signature
-			ghidra.program.model.data.FunctionDefinitionDataType sig = parser.parse(null, prototype);
+			FunctionDefinitionDataType sig = parser.parse(null, prototype);
 
 			if (sig == null) {
 				String msg = "Failed to parse function prototype";
@@ -233,7 +247,7 @@ public final class SetFunctionPrototype extends Handler {
 			}
 
 			// Create and apply the command
-			ghidra.app.cmd.function.ApplyFunctionSignatureCmd cmd = new ghidra.app.cmd.function.ApplyFunctionSignatureCmd(
+			ApplyFunctionSignatureCmd cmd = new ApplyFunctionSignatureCmd(
 					addr, sig, SourceType.USER_DEFINED);
 
 			// Apply the command to the program
