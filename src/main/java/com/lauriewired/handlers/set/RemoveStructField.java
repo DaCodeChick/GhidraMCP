@@ -17,15 +17,10 @@ import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
- * Handler to remove a field from a structure in the current Ghidra program.
- * Expects JSON parameters:
- * {
- *   "base_type": "struct_name",
- *   "name": "field_name",
- *   "length": 1 (optional, default is 1)
- * }
- * 
- * Responds with a success or error message.
+ * Handler to remove a field from a structure in the current program.
+ * Expects POST parameters:
+ * - struct_name: The name of the structure.
+ * - field_name: The name of the field to remove.
  */
 public final class RemoveStructField extends Handler {
 	/**
@@ -45,12 +40,10 @@ public final class RemoveStructField extends Handler {
 	 */
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
-		Map<String, Object> params = parseJsonParams(exchange);
-		String baseType = (String) params.get("base_type");
-		Object lengthObj = params.get("length");
-		int length = (lengthObj instanceof Integer) ? (Integer) lengthObj : 1;
-		String name = (String) params.get("name");
-		sendResponse(exchange, createArrayType(baseType, length, name));
+		Map<String, String> params = parsePostParams(exchange);
+            String structName = params.get("struct_name");
+            String fieldName = params.get("field_name");
+            sendResponse(exchange, removeStructField(structName, fieldName));
 	}
 
 	/**
