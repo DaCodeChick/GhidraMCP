@@ -1,5 +1,7 @@
 package com.lauriewired.util;
 
+import ghidra.app.decompiler.DecompileResults;
+import ghidra.app.decompiler.DecompInterface;
 import ghidra.app.services.ProgramManager;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
@@ -9,6 +11,7 @@ import ghidra.program.model.listing.CommentType;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
 import ghidra.util.Msg;
+import ghidra.util.task.ConsoleTaskMonitor;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +46,7 @@ public final class GhidraUtils {
                 return result.getDecompiledFunction().getC();
             }
         } catch (Exception e) {
-            Msg.error(this, "Error decompiling function in external program", e);
+            Msg.error(GhidraUtils.class, "Error decompiling function in external program", e);
         }
         return null;
     }
