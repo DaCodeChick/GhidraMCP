@@ -8,13 +8,12 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
-import ghidra.util.task.ConsoleTaskMonitor;
 
 import java.io.IOException;
 import java.util.Map;
 
-import static com.lauriewired.util.ParseUtils.parseQueryParams;
-import static com.lauriewired.util.ParseUtils.sendResponse;
+import static com.lauriewired.util.GhidraUtils.decompileFunctionInProgram;
+import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
@@ -65,13 +64,10 @@ public final class DecompileFunctionByAddress extends Handler {
 			if (func == null)
 				return "No function found at or containing address " + addressStr;
 
-			DecompInterface decomp = new DecompInterface();
-			decomp.openProgram(program);
-			DecompileResults result = decomp.decompileFunction(func, 30, new ConsoleTaskMonitor());
-
-			return (result != null && result.decompileCompleted())
-					? result.getDecompiledFunction().getC()
-					: "Decompilation failed";
+			String decompCode = decompileFunctionInProgram(func, program);
+            return (decompCode != null && !decompCode.isEmpty()) 
+                ? decompCode 
+                : "Decompilation failed";
 		} catch (Exception e) {
 			return "Error decompiling function: " + e.getMessage();
 		}

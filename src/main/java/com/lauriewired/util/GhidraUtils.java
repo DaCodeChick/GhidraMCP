@@ -26,6 +26,13 @@ import ghidra.util.data.DataTypeParser.AllowedDataTypes;
  * and set comments at specific addresses.
  */
 public final class GhidraUtils {
+            }
+        } catch (Exception e) {
+            Msg.error(this, "Error decompiling function in external program", e);
+        }
+        return null;
+    }
+
 	/**
 	 * Searches for a data type by name in all categories of the given DataTypeManager.
 	 *
