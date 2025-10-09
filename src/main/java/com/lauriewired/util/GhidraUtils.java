@@ -26,6 +26,21 @@ import ghidra.util.data.DataTypeParser.AllowedDataTypes;
  * and set comments at specific addresses.
  */
 public final class GhidraUtils {
+	/**
+	 * Decompiles the given function in the specified program and returns the C code as a string.
+	 *
+	 * @param func    The function to decompile
+	 * @param program The program containing the function
+	 * @return The decompiled C code as a string, or null if decompilation fails
+	 */
+	public static String decompileFunctionInProgram(Function func, Program program) {
+        try {
+            DecompInterface decomp = new DecompInterface();
+            decomp.openProgram(program);
+            DecompileResults result = decomp.decompileFunction(func, 30, new ConsoleTaskMonitor());
+
+            if (result != null && result.decompileCompleted()) {
+                return result.getDecompiledFunction().getC();
             }
         } catch (Exception e) {
             Msg.error(this, "Error decompiling function in external program", e);
