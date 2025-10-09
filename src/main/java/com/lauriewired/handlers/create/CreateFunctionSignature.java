@@ -5,9 +5,6 @@ import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.data.*;
 import ghidra.program.model.listing.Program;
-import ghidra.program.model.listing.FunctionDefinitionDataType;
-import ghidra.program.model.listing.ParameterDefinition;
-import ghidra.program.model.listing.ParameterDefinitionImpl;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -15,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Map;
 import javax.swing.SwingUtilities;
 
+import static com.lauriewired.util.GhidraUtils.*;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
@@ -73,7 +71,7 @@ public final class CreateFunctionSignature extends Handler {
                     DataTypeManager dtm = program.getDataTypeManager();
                     
                     // Resolve return type
-                    DataType returnDataType = resolveDataType(dtm, returnType);
+                    DataType returnDataType = resolveDataType(tool, dtm, returnType);
                     if (returnDataType == null) {
                         result.append("Return type not found: ").append(returnType);
                         return;
@@ -97,7 +95,7 @@ public final class CreateFunctionSignature extends Handler {
                                 String[] parts = paramPair.split(":");
                                 if (parts.length >= 2) {
                                     String paramType = parts[1].replace("\"", "").trim();
-                                    DataType paramDataType = resolveDataType(dtm, paramType);
+                                    DataType paramDataType = resolveDataType(tool, dtm, paramType);
                                     if (paramDataType != null) {
                                         funcDef.setArguments(new ParameterDefinition[] {
                                             new ParameterDefinitionImpl(null, paramDataType, null)

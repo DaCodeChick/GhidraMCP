@@ -93,7 +93,7 @@ public final class AddStructField extends Handler {
                     }
 
                     Structure struct = (Structure) dataType;
-                    DataType newFieldType = resolveDataType(dtm, fieldType);
+                    DataType newFieldType = resolveDataType(tool, dtm, fieldType);
                     if (newFieldType == null) {
                         result.append("Field data type not found: ").append(fieldType);
                         return;

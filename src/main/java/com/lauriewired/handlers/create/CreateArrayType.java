@@ -73,7 +73,7 @@ public final class CreateArrayType extends Handler {
                 int tx = program.startTransaction("Create array type");
                 try {
                     DataTypeManager dtm = program.getDataTypeManager();
-                    DataType baseDataType = resolveDataType(dtm, baseType);
+                    DataType baseDataType = resolveDataType(tool, dtm, baseType);
                     
                     if (baseDataType == null) {
                         result.append("Base data type not found: ").append(baseType);

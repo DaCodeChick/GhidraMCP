@@ -2,11 +2,12 @@ package com.lauriewired.util;
 
 import ghidra.app.services.ProgramManager;
 import ghidra.framework.plugintool.PluginTool;
+import ghidra.program.model.address.Address;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.DataTypeManager;
-import ghidra.program.model.address.Address;
-import ghidra.program.model.listing.Program;
 import ghidra.program.model.listing.CommentType;
+import ghidra.program.model.listing.Function;
+import ghidra.program.model.listing.Program;
 import ghidra.util.Msg;
 
 import javax.swing.*;
@@ -26,15 +27,22 @@ import ghidra.util.data.DataTypeParser.AllowedDataTypes;
  */
 public final class GhidraUtils {
 	/**
-	 * Gets the current program from the specified plugin tool.
+	 * Searches for a data type by name in all categories of the given DataTypeManager.
 	 *
-	 * @param tool the plugin tool
-	 * @return the current program, or null if not available
+	 * @param dtm      The DataTypeManager to search in
+	 * @param typeName The name of the data type to search for
+	 * @return The found DataType, or null if not found
 	 */
-	public static Program getCurrentProgram(PluginTool tool) {
-		ProgramManager pm = tool.getService(ProgramManager.class);
-		return pm != null ? pm.getCurrentProgram() : null;
-	}
+	public static DataType findDataTypeByNameInAllCategories(DataTypeManager dtm, String typeName) {
+        // Try exact match first
+        DataType result = searchByNameInAllCategories(dtm, typeName);
+        if (result != null) {
+            return result;
+        }
+
+        // Try lowercase
+        return searchByNameInAllCategories(dtm, typeName.toLowerCase());
+    }
 
 	/**
 	 * Gets the category name of a data type.
@@ -57,6 +65,32 @@ public final class GhidraUtils {
 		String[] parts = categoryPath.split("/");
 		return parts[parts.length - 1].toLowerCase();
 	}
+
+	/**
+	 * Gets the current program from the specified plugin tool.
+	 *
+	 * @param tool the plugin tool
+	 * @return the current program, or null if not available
+	 */
+	public static Program getCurrentProgram(PluginTool tool) {
+		ProgramManager pm = tool.getService(ProgramManager.class);
+		return pm != null ? pm.getCurrentProgram() : null;
+	}
+
+	/**
+	 * Gets the function at or containing the specified address in the given program.
+	 *
+	 * @param program the program to search in
+	 * @param addr    the address to look for
+	 * @return the function at or containing the address, or null if none found
+	 */
+	public static Function getFunctionForAddress(Program program, Address addr) {
+        Function func = program.getFunctionManager().getFunctionAt(addr);
+        if (func == null) {
+            func = program.getFunctionManager().getFunctionContaining(addr);
+        }
+        return func;
+    }
 
 	/**
 	 * Resolves a data type by name, handling common types and pointer types
@@ -96,24 +130,6 @@ public final class GhidraUtils {
 		Msg.warn(GhidraUtils.class, "Unknown type: " + typeName + ", defaulting to int");
 		return dtm.getDataType("/int");
 	}
-
-	/**
-	 * Searches for a data type by name in all categories of the given DataTypeManager.
-	 *
-	 * @param dtm      The DataTypeManager to search in
-	 * @param typeName The name of the data type to search for
-	 * @return The found DataType, or null if not found
-	 */
-	public static DataType findDataTypeByNameInAllCategories(DataTypeManager dtm, String typeName) {
-        // Try exact match first
-        DataType result = searchByNameInAllCategories(dtm, typeName);
-        if (result != null) {
-            return result;
-        }
-
-        // Try lowercase
-        return searchByNameInAllCategories(dtm, typeName.toLowerCase());
-    }
 
 	/**
 	 * Helper method to search for a data type by name in all categories of the given DataTypeManager.

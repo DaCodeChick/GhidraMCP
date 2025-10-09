@@ -109,7 +109,7 @@ public final class ModifyStructField extends Handler {
 
                     // If new type is specified, change the field type
                     if (newType != null && !newType.isEmpty()) {
-                        DataType newDataType = resolveDataType(dtm, newType);
+                        DataType newDataType = resolveDataType(tool, dtm, newType);
                         if (newDataType == null) {
                             result.append("New data type not found: ").append(newType);
                             return;

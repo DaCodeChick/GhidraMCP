@@ -80,7 +80,7 @@ public final class CreatePointerType extends Handler {
                             baseDataType = VoidDataType.dataType;
                         }
                     } else {
-                        baseDataType = resolveDataType(dtm, baseType);
+                        baseDataType = resolveDataType(tool, dtm, baseType);
                     }
                     
                     if (baseDataType == null) {

@@ -2,17 +2,17 @@ package com.lauriewired.handlers.set;
 
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
+import ghidra.app.cmd.function.ApplyFunctionSignatureCmd;
+import ghidra.app.services.DataTypeManagerService;
+import ghidra.app.util.parser.FunctionSignatureParser;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.data.DataTypeManager;
+import ghidra.program.model.data.FunctionDefinitionDataType;
 import ghidra.program.model.listing.CommentType;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.SourceType;
-import ghidra.program.util.ApplyFunctionSignatureCmd;
-import ghidra.program.util.FunctionDefinitionDataType;
-import ghidra.program.util.FunctionSignatureParser;
-import ghidra.util.datastruct.DataTypeManagerService;
 import ghidra.util.Msg;
 import ghidra.util.task.ConsoleTaskMonitor;
 
@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.lauriewired.util.GhidraUtils.*;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
