@@ -16,6 +16,7 @@ def register_list_tools(mcp: FastMCP):
 		Returns:
 			List of namespace/class names with pagination information
 		"""
+
 		return ghidra_context.http_client.safe_get("classes", {"offset": offset, "limit": limit})
 
 	@mcp.tool()
@@ -30,6 +31,7 @@ def register_list_tools(mcp: FastMCP):
 		Returns:
 			List of data labels with their addresses, names, and values
 		"""
+
 		return ghidra_context.http_client.safe_get("data", {"offset": offset, "limit": limit})
 
 	@mcp.tool()
@@ -48,6 +50,7 @@ def register_list_tools(mcp: FastMCP):
 		Returns:
 			List of data types with their names, categories, and sizes
 		"""
+
 		params = {"offset": offset, "limit": limit}
 		if category:
 			params["category"] = category
@@ -67,6 +70,7 @@ def register_list_tools(mcp: FastMCP):
 		Returns:
 			List of data type categories
 		"""
+
 		if not isinstance(offset, int) or offset < 0:
 			raise GhidraValidationError("Offset must be a non-negative integer")
 		if not isinstance(limit, int) or limit <= 0:
@@ -89,6 +93,7 @@ def register_list_tools(mcp: FastMCP):
 		Returns:
 			List of exported functions/symbols with their names and addresses
 		"""
+
 		return ghidra_context.http_client.safe_get("exports", {"offset": offset, "limit": limit})
 
 
@@ -104,6 +109,7 @@ def register_list_tools(mcp: FastMCP):
 		Returns:
 			List of function names with pagination information
 		"""
+
 		return ghidra_context.http_client.safe_get("functions", {"offset": offset, "limit": limit})
 	
 	@mcp.tool()
@@ -121,6 +127,7 @@ def register_list_tools(mcp: FastMCP):
 		Returns:
 			List of global variables/symbols with their details
 		"""
+
 		params = {"offset": offset, "limit": limit}
 		if filter:
 			params["filter"] = filter
@@ -138,6 +145,7 @@ def register_list_tools(mcp: FastMCP):
 		Returns:
 			List of imported symbols with their names and addresses
 		"""
+
 		return ghidra_context.http_client.safe_get("imports", {"offset": offset, "limit": limit})
 
 	@mcp.tool()
@@ -152,6 +160,7 @@ def register_list_tools(mcp: FastMCP):
 		Returns:
 			List of namespace names and their hierarchical paths
 		"""
+
 		return ghidra_context.http_client.safe_get("namespaces", {"offset": offset, "limit": limit})
 
 	@mcp.tool()
@@ -166,21 +175,23 @@ def register_list_tools(mcp: FastMCP):
 		Returns:
 			List of memory segments with their addresses, names, and properties
 		"""
+
 		return ghidra_context.http_client.safe_get("segments", {"offset": offset, "limit": limit})
 
 	@mcp.tool()
-	def list_strings(offset: int = 0, limit: int = 2000, filter: str = None) -> list:
+	def list_strings(offset: int = 0, limit: int = 100, filter: str = None) -> list:
 		"""
 		List all defined strings in the program with their addresses.
 		
 		Args:
 			offset: Pagination offset (default: 0)
-			limit: Maximum number of strings to return (default: 2000)
+			limit: Maximum number of strings to return (default: 100)
 			filter: Optional filter to match within string content
 			
 		Returns:
 			List of strings with their addresses
 		"""
+
 		params = {"offset": offset, "limit": limit}
 		if filter:
 			params["filter"] = filter

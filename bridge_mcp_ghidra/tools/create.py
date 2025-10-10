@@ -1,6 +1,6 @@
 import json
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context, GhidraValidationError
+from ..context import ghidra_context, GhidraValidationError, validate_hex_address
 
 def register_create_tools(mcp: FastMCP):
 	"""Register create tools for Ghidra context."""
@@ -18,6 +18,7 @@ def register_create_tools(mcp: FastMCP):
 		Returns:
 			Success/failure message with created structure details
 		"""
+
 		return ghidra_context.http_client.safe_post("auto_create_struct", {"address": address, "size": size, "name": name})
 
 	@mcp.tool()
@@ -36,6 +37,7 @@ def register_create_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message with created array type details
 		"""
+
 		if not base_type or not isinstance(base_type, str):
 			raise GhidraValidationError("Base type is required and must be a string")
 		if not isinstance(length, int) or length <= 0:
@@ -64,6 +66,7 @@ def register_create_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message with category creation details
 		"""
+
 		if not category_path or not isinstance(category_path, str):
 			raise GhidraValidationError("Category path is required and must be a string")
 
@@ -88,6 +91,7 @@ def register_create_tools(mcp: FastMCP):
 		Example:
 			values = {"STATE_IDLE": 0, "STATE_RUNNING": 1, "STATE_STOPPED": 2}
 		"""
+
 		return ghidra_context.http_client.safe_post_json("create_enum", {"name": name, "values": values, "size": size})
 
 	@mcp.tool()
@@ -106,6 +110,7 @@ def register_create_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message with function signature creation details
 		"""
+
 		if not name or not isinstance(name, str):
 			raise GhidraValidationError("Function name is required and must be a string")
 		if not return_type or not isinstance(return_type, str):
@@ -135,6 +140,10 @@ def register_create_tools(mcp: FastMCP):
 		Returns:
 			Success/failure message
 		"""
+
+		if not validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
+
 		return ghidra_context.http_client.safe_post("create_label", {
 			"address": address, 
 			"name": name
@@ -154,6 +163,7 @@ def register_create_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message with created pointer type details
 		"""
+
 		if not base_type or not isinstance(base_type, str):
 			raise GhidraValidationError("Base type is required and must be a string")
 		
@@ -189,6 +199,7 @@ def register_create_tools(mcp: FastMCP):
 				{"name": "flags", "type": "DWORD"}
 			]
 		"""
+
 		return ghidra_context.http_client.safe_post_json("create_struct", {"name": name, "fields": fields})
 
 	@mcp.tool()
@@ -203,6 +214,7 @@ def register_create_tools(mcp: FastMCP):
 		Returns:
 			Success/failure message with typedef creation details
 		"""
+
 		return ghidra_context.http_client.safe_post("create_typedef", {"name": name, "base_type": base_type})
 
 	@mcp.tool()
@@ -226,5 +238,6 @@ def register_create_tools(mcp: FastMCP):
 				{"name": "as_bytes", "type": "char[4]"}
 			]
 		"""
+
 		fields_json = json.dumps(fields) if isinstance(fields, list) else str(fields)
 		return ghidra_context.http_client.safe_post("create_union", {"name": name, "fields": fields_json})

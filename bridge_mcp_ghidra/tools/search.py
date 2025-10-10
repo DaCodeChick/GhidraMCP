@@ -122,5 +122,5 @@ def register_search_tools(mcp: FastMCP):
 			List of matching functions with their names and addresses
 		"""
 		if not query:
-			return ["Error: query string is required"]
+			raise GhidraValidationError("query string is required")
 		return ghidra_context.http_client.safe_get("searchFunctions", {"query": query, "offset": offset, "limit": limit})

@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context
+from ..context import ghidra_context, GhidraValidationError, validate_hex_address
 
 def register_comment_tools(mcp: FastMCP):
 	"""Register comment tools for Ghidra context."""
@@ -16,6 +16,10 @@ def register_comment_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message indicating the result of the comment operation
 		"""
+
+		if not validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
+
 		return ghidra_context.http_client.safe_post("set_decompiler_comment", {"address": address, "comment": comment})
 
 	@mcp.tool()
@@ -30,4 +34,8 @@ def register_comment_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message indicating the result of the comment operation
 		"""
+
+		if not validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
+	
 		return ghidra_context.http_client.safe_post("set_disassembly_comment", {"address": address, "comment": comment})

@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context, GhidraValidationError
+from ..context import ghidra_context, GhidraValidationError, validate_hex_address
 
 def register_set_tools(mcp: FastMCP):
 	"""Register set tools to MCP."""
@@ -21,6 +21,7 @@ def register_set_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message with details
 		"""
+
 		if not struct_name or not isinstance(struct_name, str):
 			raise GhidraValidationError("Structure name is required and must be a string")
 		if not field_name or not isinstance(field_name, str):
@@ -53,6 +54,10 @@ def register_set_tools(mcp: FastMCP):
 		Returns:
 			Success/failure message with details about the applied data type
 		"""
+
+		if not validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
+
 		ghidra_context.http_client.logger.info(f"apply_data_type called with: address={address}, type_name={type_name}, clear_existing={clear_existing}")
 		data = {
 			"address": address, 
@@ -63,23 +68,6 @@ def register_set_tools(mcp: FastMCP):
 		result = ghidra_context.http_client.safe_post_json("apply_data_type", data)
 		ghidra_context.http_client.logger.info(f"Result received: {result}")
 		return result
-
-	@mcp.tool()
-	def convert_number(text: str, size: int = 4) -> str:
-		"""
-		Convert a number (decimal, hexadecimal) to different representations.
-		
-		Takes a number in various formats and converts it to decimal, hexadecimal,
-		binary, and other useful representations.
-		
-		Args:
-			text: Number to convert (can be decimal like "123" or hex like "0x7B")
-			size: Size in bytes for representation (1, 2, 4, or 8, default: 4)
-			
-		Returns:
-			String with multiple number representations
-		"""
-		return "\n".join(ghidra_context.http_client.safe_get("convert_number", {"text": text, "size": size}))
 
 	@mcp.tool()
 	def delete_data_type(type_name: str) -> str:
@@ -95,10 +83,29 @@ def register_set_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message with details
 		"""
+
 		if not type_name or not isinstance(type_name, str):
 			raise GhidraValidationError("Type name is required and must be a string")
 
 		return ghidra_context.http_client.safe_post_json("delete_data_type", {"type_name": type_name})
+
+	@mcp.tool()
+	def format_number_conversions(text: str, size: int = 4) -> str:
+		"""
+		Convert a number (decimal, hexadecimal) to different representations.
+		
+		Takes a number in various formats and converts it to decimal, hexadecimal,
+		binary, and other useful representations.
+		
+		Args:
+			text: Number to convert (can be decimal like "123" or hex like "0x7B")
+			size: Size in bytes for representation (1, 2, 4, or 8, default: 4)
+			
+		Returns:
+			String with multiple number representations
+		"""
+
+		return "\n".join(ghidra_context.http_client.safe_get("convert_number", {"text": text, "size": size}))
 
 	@mcp.tool()
 	def modify_struct_field(struct_name: str, field_name: str, new_type: str = None, new_name: str = None) -> str:
@@ -117,6 +124,7 @@ def register_set_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message with details
 		"""
+
 		if not struct_name or not isinstance(struct_name, str):
 			raise GhidraValidationError("Structure name is required and must be a string")
 		if not field_name or not isinstance(field_name, str):
@@ -149,6 +157,7 @@ def register_set_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message with move operation details
 		"""
+
 		if not type_name or not isinstance(type_name, str):
 			raise GhidraValidationError("Type name is required and must be a string")
 		if not category_path or not isinstance(category_path, str):
@@ -173,6 +182,7 @@ def register_set_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message with details
 		"""
+
 		if not struct_name or not isinstance(struct_name, str):
 			raise GhidraValidationError("Structure name is required and must be a string")
 		if not field_name or not isinstance(field_name, str):
@@ -196,6 +206,10 @@ def register_set_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message indicating the result of the prototype update
 		"""
+
+		if not validate_hex_address(function_address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {function_address}")
+
 		data = {"function_address": function_address, "prototype": prototype}
 		if calling_convention:
 			data["callingConvention"] = calling_convention
@@ -214,6 +228,7 @@ def register_set_tools(mcp: FastMCP):
 		Returns:
 			Success or failure message indicating the result of the type change
 		"""
+
 		return ghidra_context.http_client.safe_post("set_local_variable_type", {
 			"function_address": function_address,
 			"variable_name": variable_name,
@@ -232,4 +247,5 @@ def register_set_tools(mcp: FastMCP):
 		Returns:
 			Result of the operation (e.g., "Bytes written successfully" or a detailed error)
 		"""
+
 		return ghidra_context.http_client.safe_post("write_bytes", {"address": address, "bytes": bytes_hex})

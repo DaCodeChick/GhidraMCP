@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context, GhidraValidationError
+from ..context import ghidra_context, GhidraValidationError, validate_function_name, validate_hex_address
 
 def register_analyze_tools(mcp: FastMCP):
 	"""Register analysis tools for Ghidra."""
@@ -12,6 +12,7 @@ def register_analyze_tools(mcp: FastMCP):
 		Returns:
 			Dictionary of detected API call patterns with threat assessment
 		"""
+
 		return ghidra_context.http_client.safe_get("analyze_api_call_chains")
 
 	@mcp.tool()
@@ -26,6 +27,7 @@ def register_analyze_tools(mcp: FastMCP):
 		Returns:
 			Dictionary with control flow analysis results
 		"""
+
 		if not ghidra_context.validate_function_name(function_name):
 			raise GhidraValidationError(f"Invalid function name: {function_name}")
 
@@ -43,6 +45,10 @@ def register_analyze_tools(mcp: FastMCP):
 		Returns:
 			Detailed analysis of data types at the specified address
 		"""
+
+		if not validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
+
 		return ghidra_context.http_client.safe_get("analyze_data_types", {"address": address, "depth": depth})
 
 	@mcp.tool()
@@ -57,7 +63,8 @@ def register_analyze_tools(mcp: FastMCP):
 		Returns:
 			Dictionary with complexity metrics
 		"""
-		if not ghidra_context.validate_function_name(function_name):
+
+		if not validate_function_name(function_name):
 			raise GhidraValidationError(f"Invalid function name: {function_name}")
 
 		return ghidra_context.http_client.safe_get("analyze_function_complexity", {"function_name": function_name})

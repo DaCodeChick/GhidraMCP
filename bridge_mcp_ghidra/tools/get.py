@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context, GhidraValidationError
+from ..context import ghidra_context, GhidraValidationError, validate_hex_address
 
 def register_get_tools(mcp: FastMCP):
 	"""Register the get endpoints."""
@@ -13,6 +13,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of decrypted strings with their locations and decryption method
 		"""
+		
 		return ghidra_context.http_client.safe_get("decrypt_strings_auto")
 
 	@mcp.tool()
@@ -24,6 +25,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			Dictionary of IOCs organized by type (IPs, URLs, files, etc.)
 		"""
+
 		return ghidra_context.http_client.safe_get("extract_iocs")
 
 	@mcp.tool()
@@ -35,6 +37,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			Dictionary of IOCs with context, confidence scores, and usage analysis
 		"""
+
 		return ghidra_context.http_client.safe_get("extract_iocs_with_context")
 
 	@mcp.tool()
@@ -48,7 +51,8 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			Current cursor/selection address in hex format
 		"""
-		return "\n".join(ghidra_context.http_client.safe_get("get_current_address"))
+
+		return "\n".join(ghidra_context.http_client.safe_get_uncached("get_current_address"))
 	
 	@mcp.tool()
 	def get_current_function() -> str:
@@ -61,7 +65,8 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			Information about the currently selected function including name and address
 		"""
-		return "\n".join(ghidra_context.http_client.safe_get("get_current_function"))
+
+		return "\n".join(ghidra_context.http_client.safe_get_uncached("get_current_function"))
 	
 	@mcp.tool()
 	def get_data_by_label(label: str) -> str:
@@ -76,6 +81,7 @@ def register_get_tools(mcp: FastMCP):
 			Each line has:  "<label> -> <address> : <value-representation>"
 			If the label is not found, an explanatory message is returned.
 		"""
+
 		return "\n".join(ghidra_context.http_client.safe_get("get_data_by_label", {"label": label}))
 
 	@mcp.tool()
@@ -89,6 +95,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of entry points with their addresses and names
 		"""
+
 		return ghidra_context.http_client.safe_get("get_entry_points")
 
 	@mcp.tool()
@@ -102,10 +109,11 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of all enumeration values with their names and numeric values
 		"""
+
 		return ghidra_context.http_client.safe_get("get_enum_values", {"enum_name": enum_name})
 
 	@mcp.tool()
-	def get_full_call_graph(format: str = "edges", limit: int = 1000) -> list:
+	def get_full_call_graph(format: str = "edges", limit: int = 500) -> list:
 		"""
 		Get the complete call graph for the entire program.
 		
@@ -114,11 +122,12 @@ def register_get_tools(mcp: FastMCP):
 		
 		Args:
 			format: Output format ("edges", "adjacency", "dot", "mermaid")
-			limit: Maximum number of relationships to return (default: 1000)
+			limit: Maximum number of relationships to return (default: 500)
 			
 		Returns:
 			Complete call graph in the specified format
 		"""
+
 		return ghidra_context.http_client.safe_get("full_call_graph", {"format": format, "limit": limit})
 
 	@mcp.tool()
@@ -132,6 +141,10 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			Function information including name, signature, and address range
 		"""
+
+		if not validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
+
 		return "\n".join(ghidra_context.http_client.safe_get("get_function_by_address", {"address": address}))
 	
 	@mcp.tool()
@@ -150,6 +163,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of call graph relationships in the format "caller -> callee"
 		"""
+
 		return ghidra_context.http_client.safe_get("function_call_graph", {"name": name, "depth": depth, "direction": direction})
 
 	@mcp.tool()
@@ -168,6 +182,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of functions called by the specified function
 		"""
+
 		return ghidra_context.http_client.safe_get("function_callees", {"name": name, "offset": offset, "limit": limit})
 
 	@mcp.tool()
@@ -186,6 +201,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of functions that call the specified function
 		"""
+
 		return ghidra_context.http_client.safe_get("function_callers", {"name": name, "offset": offset, "limit": limit})
 
 	@mcp.tool()
@@ -204,6 +220,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of jump target addresses found in the function's disassembly
 		"""
+
 		return ghidra_context.http_client.safe_get("function_jump_targets", {"name": name, "offset": offset, "limit": limit})
 
 	@mcp.tool()
@@ -219,6 +236,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of labels found within the specified function
 		"""
+
 		return ghidra_context.http_client.safe_get("function_labels", {"name": name, "offset": offset, "limit": limit})
 
 	@mcp.tool()
@@ -234,6 +252,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of references to the specified function
 		"""
+
 		return ghidra_context.http_client.safe_get("function_xrefs", {"name": name, "offset": offset, "limit": limit})
 
 	@mcp.tool()
@@ -247,10 +266,11 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			JSON string with program metadata
 		"""
+
 		return "\n".join(ghidra_context.http_client.safe_get("get_metadata"))
 	
 	@mcp.tool()
-	def get_struct_layout(struct_name: str) -> str:
+	def get_struct_layout(struct_name: str) -> list:
 		"""
 		Get the detailed layout of a structure including field offsets.
 		
@@ -260,10 +280,11 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			Detailed structure layout with field offsets, sizes, and types
 		"""
+
 		return ghidra_context.http_client.safe_get("get_struct_layout", {"struct_name": struct_name})
 
 	@mcp.tool()
-	def get_type_size(type_name: str) -> str:
+	def get_type_size(type_name: str) -> list:
 		"""
 		Get the size and alignment information for a data type.
 		
@@ -273,6 +294,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			Size, alignment, and path information for the data type
 		"""
+
 		return ghidra_context.http_client.safe_get("get_type_size", {"type_name": type_name})
 
 	@mcp.tool()
@@ -288,6 +310,10 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of references from the specified address
 		"""
+
+		if not validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
+		
 		return ghidra_context.http_client.safe_get("xrefs_from", {"address": address, "offset": offset, "limit": limit})
 
 	@mcp.tool()
@@ -303,6 +329,7 @@ def register_get_tools(mcp: FastMCP):
 		Returns:
 			List of references to the specified address
 		"""
+
 		if not ghidra_context.validate_hex_address(address):
 			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
 

@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context, GhidraValidationError
+from ..context import ghidra_context, GhidraValidationError, validate_hex_address
 
 def register_decompile_tools(mcp: FastMCP):
 	"""Register decompile tools to MCP instance."""
@@ -46,4 +46,8 @@ def register_decompile_tools(mcp: FastMCP):
 		Returns:
 			List of assembly instructions with addresses and comments
 		"""
+
+		if not validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
+
 		return ghidra_context.http_client.safe_get("disassemble_function", {"address": address})
