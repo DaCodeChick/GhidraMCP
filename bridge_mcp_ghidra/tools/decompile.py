@@ -1,9 +1,9 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context, GhidraValidationError, validate_hex_address
+from ..context import ghidra_context, GhidraValidationError, validate_function_name, validate_hex_address
 
 def register_decompile_tools(mcp: FastMCP):
 	"""Register decompile tools to MCP instance."""
-	
+
 	@mcp.tool()
 	def batch_decompile(function_names: list) -> dict:
 		"""
@@ -15,9 +15,10 @@ def register_decompile_tools(mcp: FastMCP):
 		Returns:
 			Dictionary mapping function names to their decompiled code
 		"""
+		
 		# Validate all function names
 		for name in function_names:
-			if not ghidra_context.validate_function_name(name):
+			if not validate_function_name(name):
 				raise GhidraValidationError(f"Invalid function name: {name}")
 
 		return ghidra_context.http_client.safe_get("batch_decompile", {"functions": ",".join(function_names)})
@@ -33,6 +34,7 @@ def register_decompile_tools(mcp: FastMCP):
 		Returns:
 			Decompiled C code as a string
 		"""
+
 		return ghidra_context.http_client.safe_post("decompile", name)
 	
 	@mcp.tool()
