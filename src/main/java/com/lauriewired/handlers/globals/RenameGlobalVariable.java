@@ -42,8 +42,8 @@ public final class RenameGlobalVariable extends Handler {
 		Map<String, String> params = parsePostParams(exchange);
 		String oldName = params.get("old_name");
 		String newName = params.get("new_name");
-		boolean success = renameGlobalVariable(oldName, newName);
-		sendResponse(exchange, success ? "Global variable renamed successfully" : "Failed to rename global variable");
+		String result = renameGlobalVariable(oldName, newName);
+		sendResponse(exchange, result);
 	}
 
 	/**
