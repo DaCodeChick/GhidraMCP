@@ -83,12 +83,8 @@ public final class SetLocalVariableType extends Handler {
 		}
 
 		// Try to set the type
-		boolean success = setLocalVariableType(functionAddress, variableName, newType);
-
-		String successMsg = success ? "Variable type set successfully" : "Failed to set variable type";
-		responseMsg.append("\nResult: ").append(successMsg);
-
-		sendResponse(exchange, responseMsg.toString());
+		String result = setLocalVariableType(functionAddress, variableName, newType);
+		sendResponse(exchange, result);
 	}
 
 	/**

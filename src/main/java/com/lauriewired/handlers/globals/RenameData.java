@@ -46,8 +46,8 @@ public final class RenameData extends Handler {
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
 		Map<String, String> params = parsePostParams(exchange);
-		renameDataAtAddress(params.get("address"), params.get("newName"));
-		sendResponse(exchange, "Rename data attempted");
+		String result = renameDataAtAddress(params.get("address"), params.get("newName"));
+		sendResponse(exchange, result);
 	}
 
 	/**

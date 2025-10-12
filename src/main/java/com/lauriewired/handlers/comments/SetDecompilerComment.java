@@ -36,8 +36,8 @@ public final class SetDecompilerComment extends Handler {
 		Map<String, String> params = parsePostParams(exchange);
 		String address = params.get("address");
 		String comment = params.get("comment");
-		boolean success = setDecompilerComment(address, comment);
-		sendResponse(exchange, success ? "Comment set successfully" : "Failed to set comment");
+		String result = setDecompilerComment(address, comment);
+		sendResponse(exchange, result);
 	}
 
 	/**

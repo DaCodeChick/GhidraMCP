@@ -37,8 +37,8 @@ public final class SetDisassemblyComment extends Handler {
 		Map<String, String> params = parsePostParams(exchange);
 		String address = params.get("address");
 		String comment = params.get("comment");
-		boolean success = setDisassemblyComment(address, comment);
-		sendResponse(exchange, success ? "Comment set successfully" : "Failed to set comment");
+		String result = setDisassemblyComment(address, comment);
+		sendResponse(exchange, result);
 	}
 
 	/**
