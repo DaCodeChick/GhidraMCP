@@ -5,12 +5,10 @@ from .categories import register_category_tools
 from .classes import register_class_tools
 from .comments import register_comment_tools
 from .data import register_data_tools
-from .decompile import register_decompile_tools
 from .enums import register_enum_tools
 from .functions import register_function_tools
 from .globals import register_global_tools
 from .labels import register_label_tools
-from .memory import register_memory_tools
 from .misc import register_misc_tools
 from .namespaces import register_namespace_tools
 from .security import register_security_tools
@@ -28,12 +26,10 @@ def register_all_tools():
 	register_class_tools()
 	register_comment_tools()
 	register_data_tools()
-	register_decompile_tools()
 	register_enum_tools()
 	register_function_tools()
 	register_global_tools()
 	register_label_tools()
-	register_memory_tools()
 	register_misc_tools()
 	register_namespace_tools()
 	register_security_tools()

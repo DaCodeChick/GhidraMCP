@@ -133,6 +133,91 @@ def register_data_tools(mcp: FastMCP):
 		return "\n".join(ghidra_context.http_client.safe_get("get_data_by_label", {"label": label}))
 
 	@mcp.tool()
+	def inspect_memory_content(address: str, length: int = 64, detect_strings: bool = True) -> str:
+		"""
+		Read raw memory bytes and provide hex/ASCII representation with string detection hints.
+
+		This tool helps prevent misidentification of strings as numeric data by:
+		- Reading actual byte content in hex and ASCII format
+		- Detecting printable ASCII characters and null terminators
+		- Calculating string likelihood score
+		- Suggesting appropriate data types (char[N] for strings, etc.)
+
+		Args:
+			address: Memory address in hex format (e.g., "0x6fb7ffbc")
+			length: Number of bytes to read (default: 64)
+			detect_strings: Enable string detection heuristics (default: True)
+
+		Returns:
+			JSON string with memory inspection results:
+			{
+			"address": "0x6fb7ffbc",
+			"bytes_read": 64,
+			"hex_dump": "4A 75 6C 79 00 ...",
+			"ascii_repr": "July\\0...",
+			"printable_count": 4,
+			"printable_ratio": 0.80,
+			"null_terminator_at": 4,
+			"max_consecutive_printable": 4,
+			"is_likely_string": true,
+			"detected_string": "July",
+			"suggested_type": "char[5]",
+			"string_length": 5
+			}
+		"""
+
+		if not validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hex address format: {address}")
+
+		if not isinstance(length, int) or length <= 0 or length > 4096:
+			raise GhidraValidationError("length must be a positive integer <= 4096")
+
+		params = {
+			"address": address,
+			"length": length,
+			"detect_strings": str(detect_strings).lower()
+		}
+
+		result = "\n".join(ghidra_context.http_client.safe_get("inspect_memory_content", params))
+
+		# Try to format as JSON for readability
+		try:
+			parsed = json.loads(result)
+			return json.dumps(parsed, indent=2)
+		except:
+			return result
+
+	@mcp.tool()
+	def list_data_items(offset: int = 0, limit: int = 100) -> list:
+		"""
+		List defined data labels and their values with pagination.
+		
+		Args:
+			offset: Pagination offset for starting position (default: 0)
+			limit: Maximum number of data items to return (default: 100)
+			
+		Returns:
+			List of data labels with their addresses, names, and values
+		"""
+
+		return ghidra_context.http_client.safe_get("data", {"offset": offset, "limit": limit})
+
+	@mcp.tool()
+	def list_segments(offset: int = 0, limit: int = 100) -> list:
+		"""
+		List all memory segments in the program with pagination.
+		
+		Args:
+			offset: Pagination offset for starting position (default: 0)
+			limit: Maximum number of segments to return (default: 100)
+			
+		Returns:
+			List of memory segments with their addresses, names, and properties
+		"""
+
+		return ghidra_context.http_client.safe_get("segments", {"offset": offset, "limit": limit})
+
+	@mcp.tool()
 	def rename_data(address: str, new_name: str) -> str:
 		"""
 		Rename a data label at the specified address.
@@ -199,3 +284,36 @@ def register_data_tools(mcp: FastMCP):
 				return f"✓ Created label '{new_name}' at {address} (was undefined)"
 			else:
 				return f"Create label attempted: {response}"
+
+	@mcp.tool()
+	def search_byte_patterns(pattern: str, mask: str = None) -> list:
+		"""
+		Search for byte patterns with optional masks (e.g., 'E8 ?? ?? ?? ??').
+		Useful for finding shellcode, API calls, or specific instruction sequences.
+		
+		Args:
+			pattern: Hexadecimal pattern to search for (e.g., "E8 ?? ?? ?? ??")
+			mask: Optional mask for wildcards (use ? for wildcards)
+			
+		Returns:
+			List of addresses where the pattern was found
+		"""
+		params = {"pattern": pattern}
+		if mask:
+			params["mask"] = mask
+		return ghidra_context.http_client.safe_get("search_byte_patterns", params)
+
+	@mcp.tool()
+	def write_bytes(address: str, bytes_hex: str) -> str:
+		"""
+		Writes a sequence of bytes to the specified address in the program's memory.
+
+		Args:
+			address: Destination address (e.g., "0x140001000")
+			bytes_hex: Sequence of space-separated bytes in hexadecimal format (e.g., "90 90 90 90")
+
+		Returns:
+			Result of the operation (e.g., "Bytes written successfully" or a detailed error)
+		"""
+
+		return ghidra_context.http_client.safe_post("write_bytes", {"address": address, "bytes": bytes_hex})

@@ -21,21 +21,6 @@ def register_global_tools(mcp: FastMCP):
 		return "\n".join(ghidra_context.http_client.safe_get("get_data_by_label", {"label": label}))
 
 	@mcp.tool()
-	def list_data_items(offset: int = 0, limit: int = 100) -> list:
-		"""
-		List defined data labels and their values with pagination.
-		
-		Args:
-			offset: Pagination offset for starting position (default: 0)
-			limit: Maximum number of data items to return (default: 100)
-			
-		Returns:
-			List of data labels with their addresses, names, and values
-		"""
-
-		return ghidra_context.http_client.safe_get("data", {"offset": offset, "limit": limit})
-
-	@mcp.tool()
 	def list_exports(offset: int = 0, limit: int = 100) -> list:
 		"""
 		List exported functions/symbols with pagination.
