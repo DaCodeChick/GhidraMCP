@@ -13,13 +13,13 @@ import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 /**
  * Handler to convert a number between different bases and sizes.
  */
-public final class ConvertNumber extends Handler {
+public final class FormatNumberConversion extends Handler {
 	/**
-	 * Constructor for the ConvertNumber handler.
+	 * Constructor for the FormatNumberConversion handler.
 	 * 
 	 * @param tool The plugin tool instance.
 	 */
-	public ConvertNumber(PluginTool tool) {
+	public FormatNumberConversion(PluginTool tool) {
 		super(tool, "/convert_number");
 	}
 
@@ -37,7 +37,7 @@ public final class ConvertNumber extends Handler {
 		Map<String, String> qparams = parseQueryParams(exchange);
 		String text = qparams.get("text");
 		int size = parseIntOrDefault(qparams.get("size"), 4);
-		sendResponse(exchange, convertNumber(text, size));
+		sendResponse(exchange, formatNumberConversion(text, size));
 	}
 
 	/**
@@ -49,7 +49,7 @@ public final class ConvertNumber extends Handler {
 	 * @param size The size in bytes (1, 2, 4, or 8).
 	 * @return A formatted string with the number in different bases and sizes.
 	 */
-	private String convertNumber(String text, int size) {
+	private String formatNumberConversion(String text, int size) {
 		if (text == null || text.isEmpty()) {
 			return "Error: No number provided";
 		}

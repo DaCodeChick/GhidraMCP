@@ -69,6 +69,21 @@ public final class ParseUtils {
 	}
 
 	/**
+	 * Escape special characters in a string for JSON.
+	 * 
+	 * @param str The input string to escape.
+	 * @return The escaped string suitable for JSON.
+	 */
+	public static String escapeJson(String str) {
+		if (str == null) return "";
+		return str.replace("\\", "\\\\")
+				  .replace("\"", "\\\"")
+				  .replace("\n", "\\n")
+				  .replace("\r", "\\r")
+				  .replace("\t", "\\t");
+	}
+
+	/**
 	 * Escape non-ASCII characters in a string.
 	 * 
 	 * @param input The input string to escape.
@@ -159,6 +174,20 @@ public final class ParseUtils {
 	}
 
 	/**
+	 * Parse a boolean value from an object, returning a default value if parsing fails.
+	 * 
+	 * @param obj          The object to parse.
+	 * @param defaultValue The default value to return if parsing fails.
+	 * @return The parsed boolean or the default value if parsing fails.
+	 */
+	public static boolean parseBoolOrDefault(Object obj, boolean defaultValue) {
+		if (obj == null) return defaultValue;
+		if (obj instanceof Boolean) return (Boolean) obj;
+		if (obj instanceof String) return Boolean.parseBoolean((String) obj);
+		return defaultValue;
+	}
+
+	/**
 	 * Parse a double from a string, returning a default value if parsing fails.
 	 * 
 	 * @param val          The string to parse.
@@ -166,19 +195,19 @@ public final class ParseUtils {
 	 * @return The parsed double or the default value if parsing fails.
 	 */
 	public static double parseDoubleOrDefault(String val, String defaultValue) {
-        if (val == null) val = defaultValue;
-        try {
-            return Double.parseDouble(val);
-        }
-        catch (NumberFormatException e) {
-            try {
-                return Double.parseDouble(defaultValue);
-            }
-            catch (NumberFormatException e2) {
-                return 0.0;
-            }
-        }
-    }
+		if (val == null) val = defaultValue;
+		try {
+			return Double.parseDouble(val);
+		}
+		catch (NumberFormatException e) {
+			try {
+				return Double.parseDouble(defaultValue);
+			}
+			catch (NumberFormatException e2) {
+				return 0.0;
+			}
+		}
+	}
 
 	/**
 	 * Parse a JSON-like string of field definitions into a list of FieldDefinition objects.
@@ -279,58 +308,58 @@ public final class ParseUtils {
 	 * @throws IOException If an I/O error occurs while reading the request body.
 	 */
 	public static Map<String, Object> parseJsonParams(HttpExchange exchange) throws IOException {
-        byte[] body = exchange.getRequestBody().readAllBytes();
-        String bodyStr = new String(body, StandardCharsets.UTF_8);
-        
-        // Simple JSON parsing - this is a basic implementation
-        // In a production environment, you'd want to use a proper JSON library
-        Map<String, Object> result = new HashMap<>();
-        
-        if (bodyStr.trim().isEmpty()) {
-            return result;
-        }
-        
-        try {
-            // Remove outer braces and parse key-value pairs
-            String content = bodyStr.trim();
-            if (content.startsWith("{") && content.endsWith("}")) {
-                content = content.substring(1, content.length() - 1).trim();
-                
-                // Simple parsing - split by commas but handle nested objects/arrays
-                String[] parts = splitJsonPairs(content);
-                
-                for (String part : parts) {
-                    String[] kv = part.split(":", 2);
-                    if (kv.length == 2) {
-                        String key = kv[0].trim().replaceAll("^\"|\"$", "");
-                        String value = kv[1].trim();
-                        
-                        // Handle different value types
-                        if (value.startsWith("\"") && value.endsWith("\"")) {
-                            // String value
-                            result.put(key, value.substring(1, value.length() - 1));
-                        } else if (value.startsWith("[") && value.endsWith("]")) {
-                            // Array value - keep as string for now
-                            result.put(key, value);
-                        } else if (value.startsWith("{") && value.endsWith("}")) {
-                            // Object value - keep as string for now
-                            result.put(key, value);
-                        } else if (value.matches("\\d+")) {
-                            // Integer value
-                            result.put(key, Integer.parseInt(value));
-                        } else {
-                            // Default to string
-                            result.put(key, value);
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Msg.error(ParseUtils.class, "Error parsing JSON: " + e.getMessage(), e);
-        }
-        
-        return result;
-    }
+		byte[] body = exchange.getRequestBody().readAllBytes();
+		String bodyStr = new String(body, StandardCharsets.UTF_8);
+		
+		// Simple JSON parsing - this is a basic implementation
+		// In a production environment, you'd want to use a proper JSON library
+		Map<String, Object> result = new HashMap<>();
+		
+		if (bodyStr.trim().isEmpty()) {
+			return result;
+		}
+		
+		try {
+			// Remove outer braces and parse key-value pairs
+			String content = bodyStr.trim();
+			if (content.startsWith("{") && content.endsWith("}")) {
+				content = content.substring(1, content.length() - 1).trim();
+				
+				// Simple parsing - split by commas but handle nested objects/arrays
+				String[] parts = splitJsonPairs(content);
+				
+				for (String part : parts) {
+					String[] kv = part.split(":", 2);
+					if (kv.length == 2) {
+						String key = kv[0].trim().replaceAll("^\"|\"$", "");
+						String value = kv[1].trim();
+						
+						// Handle different value types
+						if (value.startsWith("\"") && value.endsWith("\"")) {
+							// String value
+							result.put(key, value.substring(1, value.length() - 1));
+						} else if (value.startsWith("[") && value.endsWith("]")) {
+							// Array value - keep as string for now
+							result.put(key, value);
+						} else if (value.startsWith("{") && value.endsWith("}")) {
+							// Object value - keep as string for now
+							result.put(key, value);
+						} else if (value.matches("\\d+")) {
+							// Integer value
+							result.put(key, Integer.parseInt(value));
+						} else {
+							// Default to string
+							result.put(key, value);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			Msg.error(ParseUtils.class, "Error parsing JSON: " + e.getMessage(), e);
+		}
+		
+		return result;
+	}
 
 	/**
 	 * Parse POST parameters from the request body.
@@ -463,51 +492,51 @@ public final class ParseUtils {
 	 * @return An array of key-value pair strings.
 	 */
 	public static String[] splitJsonPairs(String content) {
-        List<String> parts = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        int braceDepth = 0;
-        int bracketDepth = 0;
-        boolean inString = false;
-        boolean escaped = false;
-        
-        for (char c : content.toCharArray()) {
-            if (escaped) {
-                escaped = false;
-                current.append(c);
-                continue;
-            }
-            
-            if (c == '\\' && inString) {
-                escaped = true;
-                current.append(c);
-                continue;
-            }
-            
-            if (c == '"') {
-                inString = !inString;
-                current.append(c);
-                continue;
-            }
-            
-            if (!inString) {
-                if (c == '{') braceDepth++;
-                else if (c == '}') braceDepth--;
-                else if (c == '[') bracketDepth++;
-                else if (c == ']') bracketDepth--;
-                else if (c == ',' && braceDepth == 0 && bracketDepth == 0) {
-                    parts.add(current.toString().trim());
-                    current = new StringBuilder();
-                    continue;
-                }
-            }
-            
-            current.append(c);
-        }
-        
-        if (current.length() > 0) {
-            parts.add(current.toString().trim());
-        }
-        
-        return parts.toArray(new String[0]);
-    }
+		List<String> parts = new ArrayList<>();
+		StringBuilder current = new StringBuilder();
+		int braceDepth = 0;
+		int bracketDepth = 0;
+		boolean inString = false;
+		boolean escaped = false;
+		
+		for (char c : content.toCharArray()) {
+			if (escaped) {
+				escaped = false;
+				current.append(c);
+				continue;
+			}
+			
+			if (c == '\\' && inString) {
+				escaped = true;
+				current.append(c);
+				continue;
+			}
+			
+			if (c == '"') {
+				inString = !inString;
+				current.append(c);
+				continue;
+			}
+			
+			if (!inString) {
+				if (c == '{') braceDepth++;
+				else if (c == '}') braceDepth--;
+				else if (c == '[') bracketDepth++;
+				else if (c == ']') bracketDepth--;
+				else if (c == ',' && braceDepth == 0 && bracketDepth == 0) {
+					parts.add(current.toString().trim());
+					current = new StringBuilder();
+					continue;
+				}
+			}
+			
+			current.append(c);
+		}
+		
+		if (current.length() > 0) {
+			parts.add(current.toString().trim());
+		}
+		
+		return parts.toArray(new String[0]);
+	}
 }
