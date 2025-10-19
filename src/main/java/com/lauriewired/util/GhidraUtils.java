@@ -277,6 +277,7 @@ public final class GhidraUtils {
 	public static DataType searchByNameInAllCategories(DataTypeManager dtm, String name) {
 		// Get all data types from the manager
 		Iterator<DataType> allTypes = dtm.getAllDataTypes();
+		DataType fuzzyCandidate = null;
 		while (allTypes.hasNext()) {
 			DataType dt = allTypes.next();
 			// Check if the name matches exactly (case-sensitive) 
@@ -284,11 +285,14 @@ public final class GhidraUtils {
 				return dt;
 			}
 			// For case-insensitive, we want an exact match except for case
-			if (dt.getName().equalsIgnoreCase(name)) {
-				return dt;
+			} else if (fuzzyCandidate == null && dt.getName().equalsIgnoreCase(name)) {
+				// For case-insensitive, we want an exact match except for case
+				// We want to check ALL types for exact matches, not just the first one
+				// We want to stop on the very first match for fuzzy matching
+				fuzzyCandidate = dt;
 			}
 		}
-		return null;
+		return fuzzyCandidate;
 	}
 
 	/**
