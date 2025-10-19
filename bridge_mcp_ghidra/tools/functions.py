@@ -5,82 +5,6 @@ def register_function_tools(mcp: FastMCP):
 	"""Register function-related tools to the FastMCP instance."""
 
 	@mcp.tool()
-	def analyze_control_flow(function_name: str) -> dict:
-		"""
-		Analyze control flow complexity, cyclomatic complexity, and basic blocks.
-		Provides detailed analysis of function complexity and structure.
-		
-		Args:
-			function_name: Name of the function to analyze
-			
-		Returns:
-			Dictionary with control flow analysis results
-		"""
-
-		if not ghidra_context.validate_function_name(function_name):
-			raise GhidraValidationError(f"Invalid function name: {function_name}")
-
-		return ghidra_context.http_client.safe_get("analyze_control_flow", {"function_name": function_name})
-
-	@mcp.tool()
-	def analyze_function_complexity(function_name: str) -> dict:
-		"""
-		Calculate various complexity metrics for a function.
-		Includes cyclomatic complexity, lines of code, branch count, etc.
-		
-		Args:
-			function_name: Name of the function to analyze
-			
-		Returns:
-			Dictionary with complexity metrics
-		"""
-
-		if not validate_function_name(function_name):
-			raise GhidraValidationError(f"Invalid function name: {function_name}")
-
-		return ghidra_context.http_client.safe_get("analyze_function_complexity", {"function_name": function_name})
-
-	@mcp.tool()
-	def batch_decompile_functions(function_names: list) -> dict:
-		"""
-		Decompile multiple functions in a single request for better performance.
-		
-		Args:
-			function_names: List of function names to decompile
-			
-		Returns:
-			Dictionary mapping function names to their decompiled code
-		"""
-		
-		# Validate all function names
-		for name in function_names:
-			if not validate_function_name(name):
-				raise GhidraValidationError(f"Invalid function name: {name}")
-
-		return ghidra_context.http_client.safe_get("batch_decompile", {"functions": ",".join(function_names)})
-
-	@mcp.tool()
-	def batch_rename_functions(renames: dict) -> dict:
-		"""
-		Rename multiple functions atomically.
-		
-		Args:
-			renames: Dictionary mapping old names to new names
-			
-		Returns:
-			Dictionary with rename results and any errors
-		"""
-
-		# Validate all function names
-		for old_name, new_name in renames.items():
-			if not validate_function_name(old_name):
-				raise GhidraValidationError(f"Invalid old function name: {old_name}")
-			if not validate_function_name(new_name):
-				raise GhidraValidationError(f"Invalid new function name: {new_name}")
-
-		return ghidra_context.http_client.safe_get("batch_rename_functions", {"renames": str(renames)})
-
-	@mcp.tool()
 	def create_function_signature(name: str, return_type: str, parameters: str = None) -> str:
 		"""
 		Create a function signature data type.
@@ -142,44 +66,6 @@ def register_function_tools(mcp: FastMCP):
 
 		return ghidra_context.http_client.safe_get("disassemble_function", {"address": address})
 
-	@mcp.tool()
-	def find_dead_code(function_name: str) -> list:
-		"""
-		Identify potentially unreachable code blocks within a function.
-		Useful for finding hidden functionality or dead code elimination.
-		
-		Args:
-			function_name: Name of the function to analyze
-			
-		Returns:
-			List of potentially unreachable code blocks with addresses
-		"""
-		if not ghidra_context.validate_function_name(function_name):
-			raise GhidraValidationError(f"Invalid function name: {function_name}")
-
-		return ghidra_context.http_client.safe_get("find_dead_code", {"function_name": function_name})
-
-	@mcp.tool()
-	def find_similar_functions(target_function: str, threshold: float = 0.8) -> list:
-		"""
-		Find functions similar to target using structural analysis.
-		Uses control flow and instruction patterns to identify similar functions.
-		
-		Args:
-			target_function: Name of the function to compare against
-			threshold: Similarity threshold (0.0 to 1.0, higher = more similar)
-			
-		Returns:
-			List of similar functions with similarity scores
-		"""
-		if not ghidra_context.validate_function_name(target_function):
-			raise GhidraValidationError(f"Invalid function name: {target_function}")
-
-		return ghidra_context.http_client.safe_get("find_similar_functions", {
-			"target_function": target_function,
-			"threshold": threshold
-		})
-	
 	@mcp.tool()
 	def get_current_function() -> str:
 		"""
