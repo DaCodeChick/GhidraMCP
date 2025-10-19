@@ -29,7 +29,7 @@ public final class GetFunctionXrefs extends Handler {
 	 * @param tool the plugin tool instance
 	 */
 	public GetFunctionXrefs(PluginTool tool) {
-		super(tool, "/function_xrefs", "/get_function_xrefs");
+		super(tool, "/get_function_xrefs");
 	}
 
 	/**

@@ -33,7 +33,7 @@ public final class ApplyDataType extends Handler {
 	 * @param tool The plugin tool instance.
 	 */
 	public ApplyDataType(PluginTool tool) {
-		super(tool, "/apply_data_type", "/set_global_data_type");
+		super(tool, "/apply_data_type");
 	}
 
 	/**

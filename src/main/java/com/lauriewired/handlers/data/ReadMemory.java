@@ -24,7 +24,7 @@ public final class ReadMemory extends Handler {
 	 * @param tool The PluginTool instance to use.
 	 */
 	public ReadMemory(PluginTool tool) {
-		super(tool, "/get_bytes", "/read_bytes", "/readMemory");
+		super(tool, "/readMemory");
 	}
 
 	/**

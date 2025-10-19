@@ -26,7 +26,7 @@ public final class GetStructLayout extends Handler {
 	 * @param tool the PluginTool instance to use for accessing the current program.
 	 */
 	public GetStructLayout(PluginTool tool) {
-		super(tool, "/get_struct", "/get_struct_layout");
+		super(tool, "/get_struct_layout");
 	}
 
 	/**

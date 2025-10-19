@@ -28,7 +28,7 @@ public final class GetFunctionLabels extends Handler {
 	 * @param tool The plugin tool instance.
 	 */
 	public GetFunctionLabels(PluginTool tool) {
-		super(tool, new String[] { "/function_labels" });
+		super(tool, "/function_labels" );
 	}
 
 	/**

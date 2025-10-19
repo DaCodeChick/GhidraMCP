@@ -41,7 +41,6 @@ def register_xref_tools(mcp: FastMCP):
 			}
 			]
 		"""
-		import json
 
 		if not validate_hex_address(target_address):
 			raise GhidraValidationError(f"Invalid hex address format: {target_address}")

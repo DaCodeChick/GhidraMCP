@@ -30,7 +30,7 @@ public final class GetEnumValues extends Handler {
 	 * @param tool the PluginTool instance to use for accessing the current program.
 	 */
 	public GetEnumValues(PluginTool tool) {
-		super(tool, "/get_enum", "/get_enum_values");
+		super(tool, "/get_enum_values");
 	}
 
 	/**

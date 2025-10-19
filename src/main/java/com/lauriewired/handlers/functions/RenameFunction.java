@@ -29,7 +29,7 @@ public final class RenameFunction extends Handler {
 	 * @param tool the PluginTool instance to interact with Ghidra
 	 */
 	public RenameFunction(PluginTool tool) {
-		super(tool, "/rename_function", "/renameFunction");
+		super(tool, "/rename_function");
 	}
 
 	/**

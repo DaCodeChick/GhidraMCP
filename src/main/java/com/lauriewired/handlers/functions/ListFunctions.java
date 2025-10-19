@@ -22,7 +22,7 @@ public final class ListFunctions extends Handler {
 	 * @param tool the PluginTool instance
 	 */
 	public ListFunctions(PluginTool tool) {
-		super(tool, "/functions", "/list_functions");
+		super(tool, "/list_functions");
 	}
 
 	/**

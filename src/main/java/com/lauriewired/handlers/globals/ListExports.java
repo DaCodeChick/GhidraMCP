@@ -30,7 +30,7 @@ public final class ListExports extends Handler {
 	 * @param tool the PluginTool instance to interact with Ghidra
 	 */
 	public ListExports(PluginTool tool) {
-		super(tool, "/exports", "/list_exports");
+		super(tool, "/list_exports");
 	}
 
 	/**

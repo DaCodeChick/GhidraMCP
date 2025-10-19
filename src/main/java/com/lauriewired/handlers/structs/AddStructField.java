@@ -36,7 +36,7 @@ public final class AddStructField extends Handler {
 	 * @param tool The plugin tool instance.
 	 */
 	public AddStructField(PluginTool tool) {
-		super(tool, "/add_struct_field", "/add_struct_members");
+		super(tool, "/add_struct_field");
 	}
 
 	/**

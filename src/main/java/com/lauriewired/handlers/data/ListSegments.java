@@ -25,7 +25,7 @@ public final class ListSegments extends Handler {
 	 * @param tool the PluginTool instance to use for accessing the current program.
 	 */
 	public ListSegments(PluginTool tool) {
-		super(tool, "/list_segments", "/segments");
+		super(tool, "/list_segments");
 	}
 
 	/**

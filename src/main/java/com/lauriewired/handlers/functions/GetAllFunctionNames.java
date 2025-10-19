@@ -26,7 +26,7 @@ public final class GetAllFunctionNames extends Handler {
 	 * @param tool the PluginTool instance
 	 */
 	public GetAllFunctionNames(PluginTool tool) {
-		super(tool, "/list_methods", "/methods");
+		super(tool, "/list_methods");
 	}
 
 	/**

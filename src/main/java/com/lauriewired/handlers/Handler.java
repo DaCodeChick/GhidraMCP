@@ -13,8 +13,8 @@ public abstract class Handler {
 	/** The PluginTool instance this handler is associated with. */
 	protected final PluginTool tool;
 
-	/** The paths this handler will respond to. */
-	protected final String[] paths;
+	/** The path this handler will respond to. */
+	protected final String path;
 
 
 	/**
@@ -25,27 +25,16 @@ public abstract class Handler {
 	 */
 	protected Handler(PluginTool tool, String path) {
 		this.tool = tool;
-		this.paths = new String[] { path };
+		this.path = path;
 	}
 
 	/**
-	 * Constructs a new Handler with the specified PluginTool and path.
+	 * Returns the path this handler responds to.
 	 *
-	 * @param tool the PluginTool instance this handler is associated with
-	 * @param paths the paths this handler will respond to
+	 * @return the path as a String
 	 */
-	protected Handler(PluginTool tool, String... paths) {
-		this.tool = tool;
-		this.paths = paths;
-	}
-
-	/**
-	 * Gets the paths this handler will respond to.
-	 *
-	 * @return the paths this handler will respond to
-	 */
-	public String[] getPaths() {
-		return paths;
+	public String getPath() {
+		return path;
 	}
 
 	/**

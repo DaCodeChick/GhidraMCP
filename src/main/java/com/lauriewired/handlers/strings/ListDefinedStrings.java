@@ -26,7 +26,7 @@ public final class ListDefinedStrings extends Handler {
 	 * @param tool the PluginTool instance to use for accessing the current program
 	 */
 	public ListDefinedStrings(PluginTool tool) {
-		super(tool, "/list_strings", "/strings");
+		super(tool, "/list_strings");
 	}
 
 	/**

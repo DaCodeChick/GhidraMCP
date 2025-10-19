@@ -10,16 +10,13 @@ import java.util.Map;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
-/**
- * Handler to convert a number between different bases and sizes.
- */
-public final class FormatNumberConversion extends Handler {
+public final class FormatNumberConversions extends Handler {
 	/**
-	 * Constructor for the FormatNumberConversion handler.
+	 * Constructor for the FormatNumberConversions handler.
 	 * 
 	 * @param tool The plugin tool instance.
 	 */
-	public FormatNumberConversion(PluginTool tool) {
+	public FormatNumberConversions(PluginTool tool) {
 		super(tool, "/convert_number");
 	}
 
@@ -39,17 +36,8 @@ public final class FormatNumberConversion extends Handler {
 		int size = parseIntOrDefault(qparams.get("size"), 4);
 		sendResponse(exchange, formatNumberConversion(text, size));
 	}
-
-	/**
-	 * Converts the given number text to various formats based on the specified
-	 * size.
-	 * 
-	 * @param text The number in string format (can be in decimal, hex, binary, or
-	 *             octal).
-	 * @param size The size in bytes (1, 2, 4, or 8).
-	 * @return A formatted string with the number in different bases and sizes.
-	 */
-	private String formatNumberConversion(String text, int size) {
+	
+	private String formatNumberConversions(String text, int size) {
 		if (text == null || text.isEmpty()) {
 			return "Error: No number provided";
 		}
