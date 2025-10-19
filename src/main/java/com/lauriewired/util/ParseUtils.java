@@ -50,6 +50,34 @@ public final class ParseUtils {
 	}
 
 	/**
+	 * Convert an object to a list of maps with string keys and values.
+	 * 
+	 * @param obj The object to convert.
+	 * @return A list of maps if the object is a list of maps, otherwise null.
+	 */
+	@SuppressWarnings("unchecked")
+    public static List<Map<String, String>> convertToMapList(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        if (obj instanceof List) {
+            List<Object> objList = (List<Object>) obj;
+            List<Map<String, String>> result = new ArrayList<>();
+
+            for (Object item : objList) {
+                if (item instanceof Map) {
+                    result.add((Map<String, String>) item);
+                }
+            }
+
+            return result;
+        }
+
+        return null;
+    }
+
+	/**
 	 * Decode a hexadecimal string into a byte array.
 	 * 
 	 * @param hex The hexadecimal string to decode.

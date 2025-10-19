@@ -14,6 +14,7 @@ import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.*;
 
@@ -106,14 +107,19 @@ public class GhidraMCPPlugin extends Plugin {
 			server = null;
 		}
 
-		InetSocketAddress inetAddress = new InetSocketAddress(listenAddress, port);
-
-		if (inetAddress.isUnresolved()) {
-			Msg.error(this, "Failed to resolve listen address.");
-			return;
-		}
-
-		server = HttpServer.create(inetAddress, 0);
+		try {
+            server = HttpServer.create(new InetSocketAddress(port), 0);
+            Msg.info(this, "HTTP server created successfully on port " + port);
+        } catch (BindException e) {
+            Msg.error(this, "Port " + port + " is already in use. " +
+                "Another instance may be running or port is not released yet. " +
+                "Please wait a few seconds and restart Ghidra, or change the port in Tool Options.");
+            throw e;
+        } catch (IllegalArgumentException e) {
+            Msg.error(this, "Cannot create HTTP server contexts - they may already exist. " +
+                "Please restart Ghidra completely. Error: " + e.getMessage());
+            throw new IOException("Server context creation failed", e);
+        }
 
 		Reflections reflections = new Reflections("com.lauriewired.handlers");
 		Set<Class<? extends Handler>> subclasses = reflections.getSubTypesOf(Handler.class);
@@ -151,10 +157,17 @@ public class GhidraMCPPlugin extends Plugin {
 		new Thread(() -> {
 			try {
 				server.start();
-				Msg.info(this, "GhidraMCP HTTP server started on port " + port);
+				Msg.info(this, "GhidraMCP HTTP server started on port " + options.getInt(PORT_OPTION_NAME, DEFAULT_PORT));
 			} catch (Exception e) {
-				Msg.error(this, "Failed to start HTTP server on port " + port + ". Port might be in use.", e);
-				server = null; // Ensure server isn't considered running
+				Msg.error(this, "Failed to start HTTP server: " + e.getMessage(), e);
+				Msg.showError(this, null, "GhidraMCP Server Error",
+					"Failed to start MCP server on port " + options.getInt(PORT_OPTION_NAME, DEFAULT_PORT) +
+					".\n\nThe port may already be in use. Try:\n" +
+					"1. Restarting Ghidra\n" +
+					"2. Changing the port in Edit > Tool Options > GhidraMCP\n" +
+					"3. Checking if another Ghidra instance is running\n\n" +
+					"Error: " + e.getMessage());
+					server = null; // Ensure server isn't considered running
 			}
 		}, "GhidraMCP-HTTP-Server").start();
 	}
@@ -166,10 +179,15 @@ public class GhidraMCPPlugin extends Plugin {
 	@Override
 	public void dispose() {
 		if (server != null) {
-			Msg.info(this, "Stopping GhidraMCP HTTP server...");
-			server.stop(1); // Stop with a small delay (e.g., 1 second) for connections to finish
-			server = null; // Nullify the reference
-			Msg.info(this, "GhidraMCP HTTP server stopped.");
+			try {
+                server.stop(0);
+                // Give the server time to fully stop and release all resources
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                Msg.warn(this, "Interrupted while waiting for server to stop");
+            }
+			server = null;
 		}
 		super.dispose();
 	}

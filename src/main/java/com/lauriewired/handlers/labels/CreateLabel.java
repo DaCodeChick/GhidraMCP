@@ -7,8 +7,8 @@ import ghidra.framework.plugintool.PluginTool;
 import java.io.IOException;
 import java.util.Map;
 
-import static com.lauriewired.util.GhidraUtils.*;
 import static com.lauriewired.util.ParseUtils.*;
+
 /**
  * Handler to create a label at a specified address in the current program.
  * Expects POST parameters:

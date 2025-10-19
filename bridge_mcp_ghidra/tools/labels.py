@@ -45,6 +45,32 @@ def register_label_tools(mcp: FastMCP):
 		return ghidra_context.http_client.safe_get("function_labels", {"name": name, "offset": offset, "limit": limit})
 
 	@mcp.tool()
+	def rename_data(address: str, new_name: str) -> str:
+		"""
+		Rename a data label at the specified address.
+		
+		Args:
+			address: Memory address in hex format (e.g., "0x1400010a0")
+			new_name: New name for the data label
+			
+		Returns:
+			Success or failure message indicating the result of the rename operation
+		"""
+
+		if not validate_hex_address(address):
+			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
+
+		response = ghidra_context.http_client.safe_post("renameData", {"address": address, "newName": new_name})
+
+		# Validate response and provide clear success message
+		if "success" in response.lower() or "renamed" in response.lower():
+			return f"Successfully renamed data at {address} to '{new_name}'"
+		elif "error" in response.lower() or "failed" in response.lower():
+			return response  # Return original error message
+		else:
+			return f"Rename operation completed: {response}"
+	
+	@mcp.tool()
 	def rename_label(address: str, old_name: str, new_name: str) -> str:
 		"""
 		Rename an existing label at the specified address.

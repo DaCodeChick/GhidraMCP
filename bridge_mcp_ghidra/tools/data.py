@@ -218,74 +218,6 @@ def register_data_tools(mcp: FastMCP):
 		return ghidra_context.http_client.safe_get("segments", {"offset": offset, "limit": limit})
 
 	@mcp.tool()
-	def rename_data(address: str, new_name: str) -> str:
-		"""
-		Rename a data label at the specified address.
-		
-		Args:
-			address: Memory address in hex format (e.g., "0x1400010a0")
-			new_name: New name for the data label
-			
-		Returns:
-			Success or failure message indicating the result of the rename operation
-		"""
-
-		if not validate_hex_address(address):
-			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
-
-		response = ghidra_context.http_client.safe_post("renameData", {"address": address, "newName": new_name})
-
-		# Validate response and provide clear success message
-		if "success" in response.lower() or "renamed" in response.lower():
-			return f"Successfully renamed data at {address} to '{new_name}'"
-		elif "error" in response.lower() or "failed" in response.lower():
-			return response  # Return original error message
-		else:
-			return f"Rename operation completed: {response}"
-	
-	@mcp.tool()
-	def rename_data_smart(address: str, new_name: str) -> str:
-		"""
-		Intelligently rename data at an address, automatically detecting if it's
-		defined data or undefined bytes and using the appropriate method.
-
-		This tool automatically chooses between rename_data (for defined symbols)
-		and create_label (for undefined addresses) based on the current state.
-
-		Args:
-			address: Memory address in hex format (e.g., "0x1400010a0")
-			new_name: New name for the data label
-
-		Returns:
-			Success or failure message with details about the operation performed
-		"""
-
-		if not validate_hex_address(address):
-			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
-
-		# Check if data is defined
-		is_defined = _check_if_data_defined(address)
-
-		if is_defined:
-			# Use rename_data endpoint for defined symbols
-			ghidra_context.http_client.logger.info(f"Address {address} has defined data, using rename_data")
-			response = ghidra_context.http_client.safe_post("renameData", {"address": address, "newName": new_name})
-
-			if "success" in response.lower() or "renamed" in response.lower():
-				return f"✓ Renamed defined data at {address} to '{new_name}'"
-			else:
-				return f"Rename data attempted: {response}"
-		else:
-			# Use create_label for undefined addresses
-			ghidra_context.http_client.logger.info(f"Address {address} is undefined, using create_label")
-			response = ghidra_context.http_client.safe_post("create_label", {"address": address, "name": new_name})
-
-			if "success" in response.lower() or "created" in response.lower():
-				return f"✓ Created label '{new_name}' at {address} (was undefined)"
-			else:
-				return f"Create label attempted: {response}"
-
-	@mcp.tool()
 	def search_byte_patterns(pattern: str, mask: str = None) -> list:
 		"""
 		Search for byte patterns with optional masks (e.g., 'E8 ?? ?? ?? ??').
@@ -301,7 +233,7 @@ def register_data_tools(mcp: FastMCP):
 		params = {"pattern": pattern}
 		if mask:
 			params["mask"] = mask
-		return ghidra_context.http_client.safe_get("search_byte_patterns", params)
+		return ghidra_context.http_client.safe_get("search_bytes", params)
 
 	@mcp.tool()
 	def write_bytes(address: str, bytes_hex: str) -> str:
