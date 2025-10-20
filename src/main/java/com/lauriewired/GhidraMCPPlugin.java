@@ -23,7 +23,21 @@ import java.util.*;
  * via a RESTful API.
  * The server's port and address can be configured via the Tool Options.
  */
-@PluginInfo(status = PluginStatus.RELEASED, packageName = ghidra.app.DeveloperPluginPackage.NAME, category = PluginCategoryNames.ANALYSIS, shortDescription = "HTTP server plugin", description = "Starts an embedded HTTP server to expose program data. Port configurable via Tool Options.")
+@PluginInfo(
+	status = PluginStatus.RELEASED,
+	packageName = ghidra.app.DeveloperPluginPackage.NAME,
+	category = PluginCategoryNames.ANALYSIS,
+	shortDescription = "GhidraMCP - HTTP server plugin",
+	description = "GhidraMCP - Starts an embedded HTTP server to expose program data via REST API and MCP bridge. " +
+				  "Provides 75+ endpoints for reverse engineering automation. Port configurable via Tool Options. " +
+				  "Features: function analysis, decompilation, symbol management, cross-references, label operations, " +
+				  "and high-performance batch data analysis analyze_data_region, get_bulk_xrefs, detect_array_bounds, " +
+				  "get_assembly_context, batch_decompile_xref_sources, apply_data_classification)."
+				  "high-performance batch data analysis, and field-level structure analysis. " +
+				  "Workflow optimization tools including batch_set_comments, set_plate_comment, get_function_variables, " +
+				  "batch_rename_function_components, get_valid_data_types, validate_data_type, analyze_function_completeness, " +
+				  "find_next_undefined_function, and batch_set_variable_types for streamlined reverse engineering workflows."
+)
 public class GhidraMCPPlugin extends Plugin {
 	/** The embedded HTTP server instance that handles all API requests */
 	private HttpServer server;
@@ -45,12 +59,39 @@ public class GhidraMCPPlugin extends Plugin {
 
 	/** Default port number for the HTTP server (8089) */
 	private static final int DEFAULT_PORT = 8089;
-
-	/** Default decompile timeout in seconds */
-	private static final int DEFAULT_DECOMPILE_TIMEOUT = 30;
 	
 	/** HashMap to store all registered API routes */
 	private static final HashMap<String, Handler> routes = new HashMap<>();
+
+	/** Maximum number of functions to analyze in batch operations */
+	public static final int MAX_FUNCTIONS_TO_ANALYZE = 100;
+
+	/** Minimum number of functions to analyze in batch operations */
+	public static final int MIN_FUNCTIONS_TO_ANALYZE = 1;
+
+	/** Maximum number of structure fields to analyze */
+	private static final int MAX_STRUCT_FIELDS = 256;
+
+	/** Maximum number of field examples to return */
+	private static final int MAX_FIELD_EXAMPLES = 50;
+	
+	/** Decompilation timeout in seconds */
+	private static final int DECOMPILE_TIMEOUT_SECONDS = 30;
+	
+	/** Minimum token length for searches */
+	private static final int MIN_TOKEN_LENGTH = 3;
+	
+	/** Maximum field offset for structure analysis */
+	private static final int MAX_FIELD_OFFSET = 65536;
+
+	/** Set of C language keywords to filter from field name suggestions */
+	private static final Set<String> C_KEYWORDS = Set.of(
+		"if", "else", "for", "while", "do", "switch", "case", "default",
+		"break", "continue", "return", "goto", "int", "void", "char",
+		"float", "double", "long", "short", "struct", "union", "enum",
+		"typedef", "sizeof", "const", "static", "extern", "auto", "register",
+		"signed", "unsigned", "volatile", "inline", "restrict"
+	);
 
 	/** The timeout for decompilation requests in seconds */
 	private int decompileTimeout;
@@ -75,17 +116,25 @@ public class GhidraMCPPlugin extends Plugin {
 				null, // No help location for now
 				"The network port number the embedded HTTP server will listen on. " +
 						"Requires Ghidra restart or plugin reload to take effect after changing.");
-		options.registerOption(DECOMPILE_TIMEOUT_OPTION_NAME, DEFAULT_DECOMPILE_TIMEOUT,
+		options.registerOption(DECOMPILE_TIMEOUT_OPTION_NAME, DECOMPILE_TIMEOUT_SECONDS,
 				null,
 				"Decompilation timeout. " +
 						"Requires Ghidra restart or plugin reload to take effect after changing.");
 
 		try {
 			startServer();
+			Msg.info(this, "GhidraMCPPlugin loaded successfully with HTTP server on port " +
+				options.getInt(PORT_OPTION_NAME, DEFAULT_PORT));
 		} catch (IOException e) {
-			Msg.error(this, "Failed to start HTTP server", e);
+			Msg.error(this, "Failed to start HTTP server: " + e.getMessage(), e);
+			Msg.showError(this, null, "GhidraMCP Server Error",
+				"Failed to start MCP server on port " + options.getInt(PORT_OPTION_NAME, DEFAULT_PORT) +
+				".\n\nThe port may already be in use. Try:\n" +
+				"1. Restarting Ghidra\n" +
+				"2. Changing the port in Edit > Tool Options > GhidraMCP\n" +
+				"3. Checking if another Ghidra instance is running\n\n" +
+				"Error: " + e.getMessage());
 		}
-		Msg.info(this, "GhidraMCPPlugin loaded!");
 	}
 
 	/**
@@ -103,23 +152,31 @@ public class GhidraMCPPlugin extends Plugin {
 		// Stop existing server if running (e.g., if plugin is reloaded)
 		if (server != null) {
 			Msg.info(this, "Stopping existing HTTP server before starting new one.");
-			server.stop(0);
+			try {
+				server.stop(0);
+				// Give the server time to fully stop and release all resources
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				Msg.warn(this, "Interrupted while waiting for server to stop");
+			}
 			server = null;
 		}
 
+		// Create new server - if port is in use, try to handle gracefully
 		try {
-            server = HttpServer.create(new InetSocketAddress(port), 0);
-            Msg.info(this, "HTTP server created successfully on port " + port);
-        } catch (BindException e) {
-            Msg.error(this, "Port " + port + " is already in use. " +
-                "Another instance may be running or port is not released yet. " +
-                "Please wait a few seconds and restart Ghidra, or change the port in Tool Options.");
-            throw e;
-        } catch (IllegalArgumentException e) {
-            Msg.error(this, "Cannot create HTTP server contexts - they may already exist. " +
-                "Please restart Ghidra completely. Error: " + e.getMessage());
-            throw new IOException("Server context creation failed", e);
-        }
+			server = HttpServer.create(new InetSocketAddress(port), 0);
+			Msg.info(this, "HTTP server created successfully on port " + port);
+		} catch (BindException e) {
+			Msg.error(this, "Port " + port + " is already in use. " +
+				"Another instance may be running or port is not released yet. " +
+				"Please wait a few seconds and restart Ghidra, or change the port in Tool Options.");
+			throw e;
+		} catch (IllegalArgumentException e) {
+			Msg.error(this, "Cannot create HTTP server contexts - they may already exist. " +
+				"Please restart Ghidra completely. Error: " + e.getMessage());
+			throw new IOException("Server context creation failed", e);
+		}
 
 		Reflections reflections = new Reflections("com.lauriewired.handlers");
 		Set<Class<? extends Handler>> subclasses = reflections.getSubTypesOf(Handler.class);
@@ -180,13 +237,13 @@ public class GhidraMCPPlugin extends Plugin {
 	public void dispose() {
 		if (server != null) {
 			try {
-                server.stop(0);
-                // Give the server time to fully stop and release all resources
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                Msg.warn(this, "Interrupted while waiting for server to stop");
-            }
+				server.stop(0);
+				// Give the server time to fully stop and release all resources
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				Msg.warn(this, "Interrupted while waiting for server to stop");
+			}
 			server = null;
 		}
 		super.dispose();

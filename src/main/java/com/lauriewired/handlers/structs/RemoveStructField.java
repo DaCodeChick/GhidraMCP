@@ -41,9 +41,9 @@ public final class RemoveStructField extends Handler {
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
 		Map<String, String> params = parsePostParams(exchange);
-            String structName = params.get("struct_name");
-            String fieldName = params.get("field_name");
-            sendResponse(exchange, removeStructField(structName, fieldName));
+		String structName = params.get("struct_name");
+		String fieldName = params.get("field_name");
+		sendResponse(exchange, removeStructField(structName, fieldName));
 	}
 
 	/**
