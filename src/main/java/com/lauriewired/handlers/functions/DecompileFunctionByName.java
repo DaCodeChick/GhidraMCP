@@ -13,6 +13,7 @@ import ghidra.util.task.ConsoleTaskMonitor;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import static com.lauriewired.GhidraMCPPlugin.*;
 import static com.lauriewired.util.ParseUtils.sendResponse;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
@@ -63,7 +64,7 @@ public final class DecompileFunctionByName extends Handler {
 		decomp.openProgram(program);
 		for (Function func : program.getFunctionManager().getFunctions(true)) {
 			if (func.getName().equals(name)) {
-				DecompileResults result = decomp.decompileFunction(func, 30, new ConsoleTaskMonitor());
+				DecompileResults result = decomp.decompileFunction(func, DECOMPILE_TIMEOUT_SECONDS, new ConsoleTaskMonitor());
 				if (result != null && result.decompileCompleted()) {
 					return result.getDecompiledFunction().getC();
 				} else {

@@ -69,7 +69,7 @@ public class GhidraMCPPlugin extends Plugin {
 	private static final int MAX_FIELD_EXAMPLES = 50;
 	
 	/** Decompilation timeout in seconds */
-	private static final int DECOMPILE_TIMEOUT_SECONDS = 30;
+	public static final int DECOMPILE_TIMEOUT_SECONDS = 60;
 	
 	/** Minimum token length for searches */
 	private static final int MIN_TOKEN_LENGTH = 3;
@@ -85,6 +85,15 @@ public class GhidraMCPPlugin extends Plugin {
 		"typedef", "sizeof", "const", "static", "extern", "auto", "register",
 		"signed", "unsigned", "volatile", "inline", "restrict"
 	);
+
+	/** HTTP connection timeout in seconds */
+	private static final int HTTP_CONNECTION_TIMEOUT_SECONDS = 180;
+
+	/** HTTP idle timeout in seconds */
+    private static final int HTTP_IDLE_TIMEOUT_SECONDS = 300;
+
+	/** Batch operation chunk size */
+    private static final int BATCH_OPERATION_CHUNK_SIZE = 20;
 
 	/** The timeout for decompilation requests in seconds */
 	private int decompileTimeout;

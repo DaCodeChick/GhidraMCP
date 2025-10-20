@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.lauriewired.util.ParseUtils.parsePostParams;
-import static com.lauriewired.util.ParseUtils.sendResponse;
+import static com.lauriewired.GhidraMCPPlugin.*;
+import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
@@ -87,7 +87,7 @@ public final class RenameVariable extends Handler {
 			return "Function not found";
 		}
 
-		DecompileResults result = decomp.decompileFunction(func, 30, new ConsoleTaskMonitor());
+		DecompileResults result = decomp.decompileFunction(func, DECOMPILE_TIMEOUT_SECONDS, new ConsoleTaskMonitor());
 		if (result == null || !result.decompileCompleted()) {
 			return "Decompilation failed";
 		}
