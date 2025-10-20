@@ -29,6 +29,14 @@ public final class InspectMemoryContent extends Handler {
 		sendResponse(exchange, result);
 	}
 
+	/**
+	 * Inspects memory content at the specified address.
+	 *
+	 * @param addressStr     The starting address as a string.
+	 * @param length         The number of bytes to read.
+	 * @param detectStrings  Whether to apply string detection heuristics.
+	 * @return A JSON string with the inspection results.
+	 */
 	private String inspectMemoryContent(String addressStr, int length, boolean detectStrings) {
 		Program program = getCurrentProgram(tool);
 		if (program == null) return "{\"error\": \"No program loaded\"}";

@@ -34,6 +34,13 @@ public final class SetPlateComment extends Handler {
 		sendResponse(exchange, result);
 	}
 
+	/**
+	 * Sets the plate comment for a function at the specified address
+	 * 
+	 * @param functionAddress The address of the function
+	 * @param comment The comment to set
+	 * @return A result message indicating success or failure
+	 */
 	@SuppressWarnings("deprecation")
 	private String setPlateComment(String functionAddress, String comment) {
 		Program program = getCurrentProgram();

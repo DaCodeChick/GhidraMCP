@@ -39,6 +39,12 @@ public final class BatchCreateLabels extends Handler {
 		sendResponse(exchange, result);
 	}
 
+	/**
+	 * Batch creates labels in the current program.
+	 *
+	 * @param labels A list of maps, each containing "address" and "name" keys for the label.
+	 * @return A JSON string summarizing the results of the operation.
+	 */
 	private String batchCreateLabels(List<Map<String, String>> labels) {
 		Program program = getCurrentProgram(tool);
 		if (program == null) {

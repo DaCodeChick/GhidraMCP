@@ -35,6 +35,14 @@ public final class GetAssemblyContext extends Handler {
 		sendResponse(exchange, result);
 	}
 
+	/**
+	 * Retrieves the assembly context for the specified cross-reference sources.
+	 * 
+	 * @param xrefSourcesObj the cross-reference source addresses
+	 * @param contextInstructions the number of context instructions to include
+	 * @param includePatternsObj patterns to include in the analysis
+	 * @return a JSON string representing the assembly context
+	 */
 	private String getAssemblyContext(Object xrefSourcesObj, int contextInstructions,
 									  Object includePatternsObj) {
 		Program program = getCurrentProgram(tool);

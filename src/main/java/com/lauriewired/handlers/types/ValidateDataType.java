@@ -49,7 +49,9 @@ public final class ValidateDataType extends Handler {
 		Map<String, String> qparams = parseQueryParams(exchange);
 		String address = qparams.get("address");
 		String typeName = qparams.get("type_name");
-		sendResponse(exchange, validateDataType(address, typeName));
+
+		String result = validateDataType(address, typeName);
+		sendResponse(exchange, result);
 	}
 
 	/**

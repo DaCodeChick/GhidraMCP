@@ -48,6 +48,17 @@ public final class BatchRenameFunctionComponents extends Handler {
 		sendResponse(exchange, result);
 	}
 
+	/**
+	 * Batch renames function components including the function name, parameters,
+	 * local variables, and return type.
+	 * 
+	 * @param functionAddress   The address of the function to rename components for.
+	 * @param functionName      The new name for the function.
+	 * @param parameterRenames  A map of current parameter names to new names.
+	 * @param localRenames      A map of current local variable names to new names.
+	 * @param returnType        The new return type for the function.
+	 * @return A JSON string indicating success or failure and details of the renaming.
+	 */
 	@SuppressWarnings("deprecation")
 	private String batchRenameFunctionComponents(String functionAddress, String functionName,
 												Map<String, String> parameterRenames,

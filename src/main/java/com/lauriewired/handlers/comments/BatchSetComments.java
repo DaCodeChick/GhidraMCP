@@ -41,6 +41,15 @@ public final class BatchSetComments extends Handler {
 		sendResponse(exchange, result);
 	}
 
+	/**
+	 * Batch set comments in the current program
+	 * 
+	 * @param functionAddress      The address of the function for plate comment
+	 * @param decompilerComments   List of decompiler comments to set
+	 * @param disassemblyComments  List of disassembly comments to set
+	 * @param plateComment         The plate comment to set
+	 * @return JSON string with the result of the operation
+	 */
 	@SuppressWarnings("deprecation")
 	private String batchSetComments(String functionAddress, List<Map<String, String>> decompilerComments,
 									List<Map<String, String>> disassemblyComments, String plateComment) {

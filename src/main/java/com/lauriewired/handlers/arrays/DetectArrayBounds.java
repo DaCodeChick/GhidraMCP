@@ -33,6 +33,14 @@ public final class DetectArrayBounds extends Handler {
 		sendResponse(exchange, result);
 	}
 
+	/**
+	 * Detect array bounds at the specified address using cross-reference analysis.
+	 * @param addressStr The address as a string.
+	 * @param analyzeLoopBounds Whether to analyze loop bounds (not implemented).
+	 * @param analyzeIndexing Whether to analyze indexing (not implemented).
+	 * @param maxScanRange The maximum scan range.
+	 * @return A JSON string with the detection results.
+	 */
 	private String detectArrayBounds(String addressStr, boolean analyzeLoopBounds,
 									  boolean analyzeIndexing, int maxScanRange) {
 		Program program = getCurrentProgram(tool);

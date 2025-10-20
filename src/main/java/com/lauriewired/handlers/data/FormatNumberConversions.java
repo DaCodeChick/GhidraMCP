@@ -10,6 +10,9 @@ import java.util.Map;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
+/**
+ * Handler for converting and formatting numbers in various representations.
+ */
 public final class FormatNumberConversions extends Handler {
 	/**
 	 * Constructor for the FormatNumberConversions handler.
@@ -21,10 +24,7 @@ public final class FormatNumberConversions extends Handler {
 	}
 
 	/**
-	 * Handles the HTTP exchange for converting numbers.
-	 * Expects query parameters:
-	 * - text: The number to convert (in any base)
-	 * - size: The size in bytes (1, 2, 4, or 8)
+	 * Handles the HTTP exchange for number conversion requests.
 	 * 
 	 * @param exchange The HTTP exchange object.
 	 * @throws IOException If an I/O error occurs.
@@ -37,6 +37,13 @@ public final class FormatNumberConversions extends Handler {
 		sendResponse(exchange, formatNumberConversion(text, size));
 	}
 	
+	/**
+	 * Formats the number conversions for the given text and size.
+	 * 
+	 * @param text The number in string format.
+	 * @param size The size in bytes (1, 2, 4, or 8).
+	 * @return A formatted string with conversions.
+	 */
 	private String formatNumberConversions(String text, int size) {
 		if (text == null || text.isEmpty()) {
 			return "Error: No number provided";

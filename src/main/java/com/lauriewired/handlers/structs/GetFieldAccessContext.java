@@ -44,6 +44,13 @@ public final class GetFieldAccessContext extends Handler {
 		sendResponse(exchange, result);
 	}
 
+	/**
+	 * Get field access context for a given struct address and field offset.
+	 * @param structAddressStr The struct address as a string.
+	 * @param fieldOffset The field offset as an integer.
+	 * @param numExamples The number of examples to retrieve.
+	 * @return A JSON string representing the field access context.
+	 */
 	private String getFieldAccessContext(String structAddressStr, int fieldOffset, int numExamples) {
 		// MAJOR FIX #7: Validate input parameters
 		if (fieldOffset < 0 || fieldOffset > MAX_FIELD_OFFSET) {

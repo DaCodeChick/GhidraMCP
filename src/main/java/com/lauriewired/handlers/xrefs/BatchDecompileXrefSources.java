@@ -9,7 +9,7 @@ import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Reference;
-import ghidra.program.model.symbol.ReferenceIterator;;
+import ghidra.program.model.symbol.ReferenceIterator;
 import ghidra.program.model.symbol.ReferenceManager;
 
 import java.util.Map;
@@ -38,6 +38,14 @@ public final class BatchDecompileXrefSources extends Handler {
 		sendResponse(exchange, result);
 	}
 
+	/**
+	 * Decompiles all functions that reference the specified target address.
+	 * 
+	 * @param targetAddressStr the target address as a string
+	 * @param includeFunctionNames whether to include function names in the output
+	 * @param includeUsageContext whether to include usage context in the output
+	 * @return a JSON string containing decompiled code and metadata
+	 */
 	private String batchDecompileXrefSources(String targetAddressStr,
 											 boolean includeFunctionNames,
 											 boolean includeUsageContext) {

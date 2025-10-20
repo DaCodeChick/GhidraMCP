@@ -42,6 +42,15 @@ public final class AnalyzeDataRegion extends Handler {
 		sendResponse(exchange, result);
 	}
 
+	/**
+	 * Analyze a data region starting from the given address.
+	 * @param startAddressStr The starting address as a string.
+	 * @param maxScanBytes The maximum number of bytes to scan.
+	 * @param includeXrefMap Whether to include the cross-reference map.
+	 * @param includeAssemblyPatterns Whether to include assembly patterns.
+	 * @param includeBoundaryDetection Whether to include boundary detection.
+	 * @return A JSON string containing the analysis results.
+	 */
 	private String analyzeDataRegion(String startAddressStr, int maxScanBytes,
 									  boolean includeXrefMap, boolean includeAssemblyPatterns,
 									  boolean includeBoundaryDetection) {
