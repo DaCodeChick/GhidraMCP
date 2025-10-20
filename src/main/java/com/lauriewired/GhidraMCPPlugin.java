@@ -29,14 +29,7 @@ import java.util.*;
 	category = PluginCategoryNames.ANALYSIS,
 	shortDescription = "GhidraMCP - HTTP server plugin",
 	description = "GhidraMCP - Starts an embedded HTTP server to expose program data via REST API and MCP bridge. " +
-				  "Provides 75+ endpoints for reverse engineering automation. Port configurable via Tool Options. " +
-				  "Features: function analysis, decompilation, symbol management, cross-references, label operations, " +
-				  "and high-performance batch data analysis analyze_data_region, get_bulk_xrefs, detect_array_bounds, " +
-				  "get_assembly_context, batch_decompile_xref_sources, apply_data_classification)."
-				  "high-performance batch data analysis, and field-level structure analysis. " +
-				  "Workflow optimization tools including batch_set_comments, set_plate_comment, get_function_variables, " +
-				  "batch_rename_function_components, get_valid_data_types, validate_data_type, analyze_function_completeness, " +
-				  "find_next_undefined_function, and batch_set_variable_types for streamlined reverse engineering workflows."
+				  "Provides 100+ endpoints for reverse engineering automation. Port configurable via Tool Options. "
 )
 public class GhidraMCPPlugin extends Plugin {
 	/** The embedded HTTP server instance that handles all API requests */
