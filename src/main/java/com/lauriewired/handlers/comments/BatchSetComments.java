@@ -120,6 +120,17 @@ public final class BatchSetComments extends Handler {
 				}
 			});
 
+			// Force event processing to ensure changes propagate to decompiler cache
+			if (success.get()) {
+				program.flushEvents();
+				// Small delay to ensure decompiler cache refresh
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+			}
+
 			if (success.get()) {
 				result.append("\"success\": true, ");
 				result.append("\"decompiler_comments_set\": ").append(decompilerCount.get()).append(", ");

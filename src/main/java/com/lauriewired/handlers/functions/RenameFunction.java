@@ -8,11 +8,11 @@ import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.SourceType;
 import ghidra.util.Msg;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 
 import static com.lauriewired.util.ParseUtils.parsePostParams;
 import static com.lauriewired.util.ParseUtils.sendResponse;
@@ -43,7 +43,7 @@ public final class RenameFunction extends Handler {
 	public void handle(HttpExchange exchange) throws IOException {
 		Map<String, String> params = parsePostParams(exchange);
 		String result = renameFunction(params.get("oldName"), params.get("newName"));
-        sendResponse(exchange, result);
+		sendResponse(exchange, result);
 	}
 
 	/**
@@ -76,6 +76,16 @@ public final class RenameFunction extends Handler {
 					program.endTransaction(tx, successFlag.get());
 				}
 			});
+
+			// Force event processing to ensure changes propagate
+			if (successFlag.get()) {
+				program.flushEvents();
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+			}
 		} catch (InterruptedException | InvocationTargetException e) {
 			Msg.error(this, "Failed to execute rename on Swing thread", e);
 		}

@@ -16,6 +16,21 @@ CACHE_SIZE = 256
 
 ENABLE_CACHING = True
 
+# Per-endpoint timeout configuration for expensive operations
+ENDPOINT_TIMEOUTS = {
+	'document_function_complete': 120,     # 2 minutes - comprehensive atomic documentation
+	'batch_rename_variables': 60,          # 1 minute - variable renames can trigger re-analysis
+	'batch_set_comments': 45,              # 45 seconds - multiple comment operations
+	'analyze_function_complete': 60,       # 1 minute - comprehensive analysis with decompilation
+	'batch_decompile_functions': 90,       # 1.5 minutes - multiple decompilations
+	'batch_rename_function_components': 60, # 1 minute - multiple rename operations
+	'batch_set_variable_types': 60,        # 1 minute - DataType lookups can be slow
+	'analyze_data_region': 60,             # 1 minute - complex data analysis
+	'batch_decompile_xref_sources': 90,    # 1.5 minutes - multiple decompilations
+	'create_and_apply_data_type': 45,      # 45 seconds - struct creation + application
+	'default': 30                          # 30 seconds for all other operations
+}
+
 # Make log level configurable via environment variable (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 # Default to INFO for production use
 LOG_LEVEL = os.getenv("GHIDRA_MCP_LOG_LEVEL", "INFO")
@@ -122,10 +137,14 @@ class GhidraHTTPClient:
 
 		url = urljoin(self.server_url, endpoint)
 
+		# Get endpoint-specific timeout
+		self.timeout = get_timeout_for_endpoint(endpoint)
+		self.logger.debug(f"Using timeout of {self.timeout}s for endpoint {endpoint}")
+
 		for attempt in range(retries):
 			try:
 				start_time = time.time()
-				response = self.session.get(url, params=params, timeout=REQUEST_TIMEOUT)
+				response = self.session.get(url, params=params, timeout=self.timeout)
 				response.encoding = 'utf-8'
 				duration = time.time() - start_time
 
@@ -186,10 +205,14 @@ class GhidraHTTPClient:
 
 		url = urljoin(self.server_url, endpoint)
 
+		# Get endpoint-specific timeout
+		self.timeout = get_timeout_for_endpoint(endpoint)
+		self.logger.debug(f"Using timeout of {self.timeout}s for endpoint {endpoint}")
+
 		for attempt in range(retries):
 			try:
 				start_time = time.time()
-				response = self.session.get(url, params=params, timeout=REQUEST_TIMEOUT)
+				response = self.session.get(url, params=params, timeout=self.timeout)
 				response.encoding = 'utf-8'
 				duration = time.time() - start_time
 
@@ -227,62 +250,6 @@ class GhidraHTTPClient:
 				return [f"Unexpected error: {str(e)}"]
 
 		return ["Unexpected error in safe_get_uncached"]
-
-	def safe_post_json(self, endpoint: str, data: dict, retries: int = 3) -> str:
-		"""
-		Perform a JSON POST request with enhanced error handling and retry logic.
-		
-		Args:
-			endpoint: The API endpoint to call
-			data: Data to send as JSON
-			retries: Number of retry attempts for server errors
-		
-		Returns:
-			String response from the server
-		"""
-		# Validate server URL for security  
-		if not validate_server_url(self.server_url):
-			self.logger.error(f"Invalid or unsafe server URL: {self.server_url}")
-			return "Error: Invalid server URL - only local addresses allowed"
-
-		url = urljoin(self.server_url, endpoint)
-
-		for attempt in range(retries):
-			try:
-				start_time = time.time()
-				
-				self.logger.info(f"Sending JSON POST to {url} with data: {data}")
-				response = self.session.post(url, json=data, timeout=REQUEST_TIMEOUT)
-				
-				response.encoding = 'utf-8'
-				duration = time.time() - start_time
-
-				self.logger.info(f"JSON POST to {endpoint} took {duration:.2f}s (attempt {attempt + 1}/{retries}), status: {response.status_code}")
-				
-				if response.ok:
-					return response.text.strip()
-				elif response.status_code == 404:
-					return f"Error: Endpoint {endpoint} not found"
-				elif response.status_code >= 500:
-					if attempt < retries - 1:  # Only log retry attempts for server errors
-						self.logger.warning(f"Server error {response.status_code} on attempt {attempt + 1}, retrying...")
-						time.sleep(1)  # Brief delay before retry
-						continue
-					else:
-						return f"Error: Server error {response.status_code} after {retries} attempts"
-				else:
-					return f"Error: HTTP {response.status_code} - {response.text}"
-					
-			except requests.RequestException as e:
-				if attempt < retries - 1:
-					self.logger.warning(f"Request failed on attempt {attempt + 1}, retrying: {e}")
-					time.sleep(1)
-					continue
-				else:
-					self.logger.error(f"Request failed after {retries} attempts: {e}")
-					return f"Error: Request failed - {str(e)}"
-
-		return "Error: Maximum retries exceeded"
 
 	def safe_post(self, endpoint: str, data: dict | str, retries: int = 3) -> str:
 		"""
@@ -351,6 +318,66 @@ class GhidraHTTPClient:
 				return f"Unexpected error: {str(e)}"
 		
 		return "Unexpected error in safe_post"
+	
+	def safe_post_json(self, endpoint: str, data: dict, retries: int = 3) -> str:
+		"""
+		Perform a JSON POST request with enhanced error handling and retry logic.
+		
+		Args:
+			endpoint: The API endpoint to call
+			data: Data to send as JSON
+			retries: Number of retry attempts for server errors
+		
+		Returns:
+			String response from the server
+		"""
+		# Validate server URL for security  
+		if not validate_server_url(self.server_url):
+			self.logger.error(f"Invalid or unsafe server URL: {self.server_url}")
+			return "Error: Invalid server URL - only local addresses allowed"
+
+		url = urljoin(self.server_url, endpoint)
+
+		# Get endpoint-specific timeout
+		self.timeout = get_timeout_for_endpoint(endpoint)
+		self.logger.debug(f"Using timeout of {self.timeout}s for endpoint {endpoint}")
+
+		for attempt in range(retries):
+			try:
+				start_time = time.time()
+				
+				self.logger.info(f"Sending JSON POST to {url} with data: {data}")
+				response = self.session.post(url, json=data, timeout=self.timeout)
+				
+				response.encoding = 'utf-8'
+				duration = time.time() - start_time
+
+				self.logger.info(f"JSON POST to {endpoint} took {duration:.2f}s (attempt {attempt + 1}/{retries}), status: {response.status_code}")
+				
+				if response.ok:
+					return response.text.strip()
+				elif response.status_code == 404:
+					return f"Error: Endpoint {endpoint} not found"
+				elif response.status_code >= 500:
+					if attempt < retries - 1:  # Only log retry attempts for server errors
+						self.logger.warning(f"Server error {response.status_code} on attempt {attempt + 1}, retrying...")
+						time.sleep(1)  # Brief delay before retry
+						continue
+					else:
+						return f"Error: Server error {response.status_code} after {retries} attempts"
+				else:
+					return f"Error: HTTP {response.status_code} - {response.text}"
+					
+			except requests.RequestException as e:
+				if attempt < retries - 1:
+					self.logger.warning(f"Request failed on attempt {attempt + 1}, retrying: {e}")
+					time.sleep(1)
+					continue
+				else:
+					self.logger.error(f"Request failed after {retries} attempts: {e}")
+					return f"Error: Request failed - {str(e)}"
+
+		return "Error: Maximum retries exceeded"
 
 def cache_key(*args: Any, **kwargs: Any) -> str:
 	"""
@@ -359,11 +386,20 @@ def cache_key(*args: Any, **kwargs: Any) -> str:
 	Returns:
 		MD5 hash of serialized arguments
 	"""
+
 	key_data = {"args": args, "kwargs": kwargs}
 	return hashlib.md5(json.dumps(key_data, sort_keys=True, default=str).encode()).hexdigest()
 
+def get_timeout_for_endpoint(endpoint: str) -> int:
+	"""Get the appropriate timeout for a specific endpoint"""
+
+	# Extract endpoint name from URL path
+	endpoint_name = endpoint.strip('/').split('/')[-1]
+	return ENDPOINT_TIMEOUTS.get(endpoint_name, ENDPOINT_TIMEOUTS['default'])
+
 def validate_server_url(url: str) -> bool:
 	"""Validate that the server URL is safe to use"""
+
 	try:
 		parsed = urlparse(url)
 		# Only allow HTTP/HTTPS protocols

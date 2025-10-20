@@ -85,6 +85,17 @@ public final class SetPlateComment extends Handler {
 					program.endTransaction(tx, success.get());
 				}
 			});
+
+			// Force event processing to ensure changes propagate to decompiler cache
+			if (success.get()) {
+				program.flushEvents();
+				// Small delay to ensure decompiler cache refresh
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+			}
 		} catch (Exception e) {
 			resultMsg.append("Error: Failed to execute on Swing thread: ").append(e.getMessage());
 		}
