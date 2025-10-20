@@ -283,7 +283,6 @@ public final class GhidraUtils {
 			// Check if the name matches exactly (case-sensitive) 
 			if (dt.getName().equals(name)) {
 				return dt;
-			}
 			// For case-insensitive, we want an exact match except for case
 			} else if (fuzzyCandidate == null && dt.getName().equalsIgnoreCase(name)) {
 				// For case-insensitive, we want an exact match except for case
