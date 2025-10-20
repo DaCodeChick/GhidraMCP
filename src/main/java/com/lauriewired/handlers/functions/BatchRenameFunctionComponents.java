@@ -14,7 +14,7 @@ import ghidra.program.model.symbol.Variable;
 import ghidra.util.Msg;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.Map;
 import javax.swing.*;
