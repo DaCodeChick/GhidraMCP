@@ -63,22 +63,22 @@ public class GhidraMCPPlugin extends Plugin {
 	public static final int MIN_FUNCTIONS_TO_ANALYZE = 1;
 
 	/** Maximum number of structure fields to analyze */
-	private static final int MAX_STRUCT_FIELDS = 256;
+	public static final int MAX_STRUCT_FIELDS = 256;
 
 	/** Maximum number of field examples to return */
-	private static final int MAX_FIELD_EXAMPLES = 50;
-	
+	public static final int MAX_FIELD_EXAMPLES = 50;
+
 	/** Decompilation timeout in seconds */
-	private static final int DECOMPILE_TIMEOUT_SECONDS = 30;
-	
+	public static final int DECOMPILE_TIMEOUT_SECONDS = 30;
+
 	/** Minimum token length for searches */
-	private static final int MIN_TOKEN_LENGTH = 3;
-	
+	public static final int MIN_TOKEN_LENGTH = 3;
+
 	/** Maximum field offset for structure analysis */
-	private static final int MAX_FIELD_OFFSET = 65536;
+	public static final int MAX_FIELD_OFFSET = 65536;
 
 	/** Set of C language keywords to filter from field name suggestions */
-	private static final Set<String> C_KEYWORDS = Set.of(
+	public static final Set<String> C_KEYWORDS = Set.of(
 		"if", "else", "for", "while", "do", "switch", "case", "default",
 		"break", "continue", "return", "goto", "int", "void", "char",
 		"float", "double", "long", "short", "struct", "union", "enum",

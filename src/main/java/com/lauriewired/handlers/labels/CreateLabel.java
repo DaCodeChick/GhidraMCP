@@ -7,6 +7,7 @@ import ghidra.framework.plugintool.PluginTool;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.lauriewired.util.GhidraUtils.createLabel;
 import static com.lauriewired.util.ParseUtils.*;
 
 /**

@@ -1,13 +1,14 @@
 package com.lauriewired.handlers.misc;
 
+import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.listing.Program;
 
 import java.io.IOException;
 
+import static com.lauriewired.util.GhidraUtils.getCurrentProgram;
 import static com.lauriewired.util.ParseUtils.sendResponse;
-import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
  * Handler to check if the GhidraMCP plugin is running and if a program is

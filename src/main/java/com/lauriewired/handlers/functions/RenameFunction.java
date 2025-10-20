@@ -42,7 +42,8 @@ public final class RenameFunction extends Handler {
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
 		Map<String, String> params = parsePostParams(exchange);
-		String result = renameFunction(params.get("oldName"), params.get("newName"));
+		boolean success = rename(params.get("oldName"), params.get("newName"));
+		String result = success ? "Function renamed successfully" : "Failed to rename function";
         sendResponse(exchange, result);
 	}
 

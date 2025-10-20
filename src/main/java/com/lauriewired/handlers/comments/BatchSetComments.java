@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.SwingUtilities;
 
+import static com.lauriewired.util.GhidraUtils.getCurrentProgram;
 import static com.lauriewired.util.ParseUtils.*;
 
 public final class BatchSetComments extends Handler {

@@ -9,8 +9,8 @@ import ghidra.program.model.data.DataTypeManager;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.Parameter;
 import ghidra.program.model.listing.Program;
+import ghidra.program.model.listing.Variable;
 import ghidra.program.model.symbol.SourceType;
-import ghidra.program.model.symbol.Variable;
 import ghidra.util.Msg;
 
 import java.io.IOException;

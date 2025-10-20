@@ -38,6 +38,15 @@ public abstract class Handler {
 	}
 
 	/**
+	 * Returns the paths this handler responds to.
+	 *
+	 * @return an array of paths
+	 */
+	public String[] getPaths() {
+		return new String[] { path };
+	}
+
+	/**
 	 * Handles an HTTP request.
 	 * Subclasses must implement this method to define how requests are
 	 * processed.

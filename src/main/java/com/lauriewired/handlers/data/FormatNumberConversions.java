@@ -34,7 +34,7 @@ public final class FormatNumberConversions extends Handler {
 		Map<String, String> qparams = parseQueryParams(exchange);
 		String text = qparams.get("text");
 		int size = parseIntOrDefault(qparams.get("size"), 4);
-		sendResponse(exchange, formatNumberConversion(text, size));
+		sendResponse(exchange, formatNumberConversions(text, size));
 	}
 	
 	/**

@@ -29,8 +29,8 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import static com.lauriewired.GhidraMCPPlugin.*;
+import static com.lauriewired.util.GhidraUtils.*;
 import static com.lauriewired.util.ParseUtils.*;
-import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 /**
  * Handler to analyze struct field usage in decompiled code.
@@ -215,7 +215,7 @@ public final class AnalyzeStructFieldUsage extends Handler {
 		try {
 			SwingUtilities.invokeAndWait(() -> {
                 try {
-                    Program program = getCurrentProgram();
+                    Program program = getCurrentProgram(tool);
                     if (program == null) {
                         result.set("{\"error\": \"No program loaded\"}");
                         return;
