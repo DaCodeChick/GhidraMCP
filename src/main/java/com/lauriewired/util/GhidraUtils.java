@@ -9,7 +9,9 @@ import ghidra.program.model.address.Address;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.DataTypeManager;
 import ghidra.program.model.listing.CommentType;
+import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Function;
+import ghidra.program.model.listing.Listing;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.*;
 import ghidra.util.data.DataTypeParser;
@@ -74,7 +76,7 @@ public final class GhidraUtils {
 				Symbol existingSymbol = existingLabels.next();
 				if (existingSymbol.getSymbolType() == SymbolType.LABEL) {
 					// Allow creation but warn about duplicate name
-					Msg.warn(this, "Label name '" + labelName + "' already exists at address " +
+					Msg.warn(GhidraUtils.class, "Label name '" + labelName + "' already exists at address " +
 							existingSymbol.getAddress() + ". Creating duplicate at " + addressStr);
 				}
 			}
@@ -217,13 +219,13 @@ public final class GhidraUtils {
 						}
 					}
 				} catch (Exception e) {
-					Msg.error(this, "Rename data error", e);
+					Msg.error(GhidraUtils.class, "Rename data error", e);
 				} finally {
 					program.endTransaction(tx, true);
 				}
 			});
 		} catch (InterruptedException | InvocationTargetException e) {
-			Msg.error(this, "Failed to execute rename data on Swing thread", e);
+			Msg.error(GhidraUtils.class, "Failed to execute rename data on Swing thread", e);
 		}
 	}
 
@@ -283,7 +285,6 @@ public final class GhidraUtils {
 			// Check if the name matches exactly (case-sensitive) 
 			if (dt.getName().equals(name)) {
 				return dt;
-			}
 			// For case-insensitive, we want an exact match except for case
 			} else if (fuzzyCandidate == null && dt.getName().equalsIgnoreCase(name)) {
 				// For case-insensitive, we want an exact match except for case

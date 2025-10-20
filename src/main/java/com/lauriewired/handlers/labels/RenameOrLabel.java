@@ -78,10 +78,11 @@ public final class RenameOrLabel extends Handler {
 
             if (data != null) {
                 // Defined data exists - use rename_data logic
-                return renameDataAtAddress(addressStr, newName);
+                renameDataAtAddress(tool, addressStr, newName);
+                return "Data renamed successfully";
             } else {
                 // No defined data - use create_label logic
-                return createLabel(addressStr, newName);
+                return createLabel(tool, addressStr, newName);
             }
 
         } catch (Exception e) {

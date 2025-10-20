@@ -6,12 +6,14 @@ import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Listing;
+import ghidra.program.model.listing.Program;
 import ghidra.program.model.mem.Memory;
-import ghidra.program.model.program.Program;
 import ghidra.program.model.symbol.Reference;
 import ghidra.program.model.symbol.ReferenceIterator;
 import ghidra.program.model.symbol.ReferenceManager;
 import ghidra.program.model.symbol.Symbol;
+
+import java.nio.charset.StandardCharsets;
 
 import java.io.IOException;
 import java.util.ArrayList;

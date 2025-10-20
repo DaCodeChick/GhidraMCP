@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Map;
 import javax.swing.SwingUtilities;
 
+import static com.lauriewired.util.GhidraUtils.getCurrentProgram;
 import static com.lauriewired.util.ParseUtils.*;
 
 public final class SetPlateComment extends Handler {
@@ -43,7 +44,7 @@ public final class SetPlateComment extends Handler {
 	 */
 	@SuppressWarnings("deprecation")
 	private String setPlateComment(String functionAddress, String comment) {
-		Program program = getCurrentProgram();
+		Program program = getCurrentProgram(tool);
 		if (program == null) {
 			return "Error: No program loaded";
 		}

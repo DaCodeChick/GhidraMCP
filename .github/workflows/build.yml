@@ -2,7 +2,7 @@ name: Build Ghidra Extension
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, fix-build-action ]
   pull_request:
     branches: [ main, master ]
 
@@ -21,7 +21,9 @@ jobs:
         distribution: 'temurin'
         
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
+      uses: gradle/actions/setup-gradle@v5
+      with:
+        gradle-version: current
       
     - name: Download Ghidra
       run: |
@@ -31,7 +33,9 @@ jobs:
         echo "GHIDRA_INSTALL_DIR=$GHIDRA_DIR" >> $GITHUB_ENV
         
     - name: Build with Gradle
-      run: ./gradle build -PGHIDRA_INSTALL_DIR=$GHIDRA_INSTALL_DIR
+      env:
+        GHIDRA_INSTALL_DIR: ${{ env.GHIDRA_INSTALL_DIR }}
+      run: gradle build
       
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

@@ -14,7 +14,7 @@ import ghidra.program.model.symbol.SourceType;
 import ghidra.util.Msg;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.Map;
 import javax.swing.*;
@@ -34,10 +34,12 @@ public final class BatchSetVariableTypes extends Handler {
 
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
-		Map<String, String> qparams = parseQueryParams(exchange);
-		String functionName = qparams.get("function_name");
+		Map<String, Object> params = parseJsonParams(exchange);
+		String functionAddress = (String) params.get("function_address");
+		@SuppressWarnings("unchecked")
+		Map<String, String> variableTypes = (Map<String, String>) params.get("variable_types");
 
-		String result = BatchSetVariableTypes(functionName);
+		String result = batchSetVariableTypes(functionAddress, variableTypes);
 		sendResponse(exchange, result);
 	}
 

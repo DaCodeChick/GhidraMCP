@@ -11,11 +11,14 @@ import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Reference;
 import ghidra.program.model.symbol.ReferenceIterator;
 import ghidra.program.model.symbol.ReferenceManager;
+import ghidra.util.task.ConsoleTaskMonitor;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import static com.lauriewired.util.GhidraUtils.getCurrentProgram;
 import static com.lauriewired.util.ParseUtils.*;
-import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
 
 public final class BatchDecompileXrefSources extends Handler {
 	/**

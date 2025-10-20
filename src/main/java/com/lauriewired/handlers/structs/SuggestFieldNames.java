@@ -4,10 +4,10 @@ import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
-import ghidra.program.model.data.Data;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.data.DataTypeComponent;
 import ghidra.program.model.data.Structure;
+import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.Program;
 import ghidra.util.Msg;
 

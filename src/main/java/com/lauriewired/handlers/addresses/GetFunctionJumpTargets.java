@@ -32,7 +32,17 @@ public final class GetFunctionJumpTargets extends Handler {
 	 * @param tool the plugin tool
 	 */
 	public GetFunctionJumpTargets(PluginTool tool) {
-		super(tool, "/function_jump_target_addresses", "/function_jump_targets");
+		super(tool, "/function_jump_target_addresses");
+	}
+
+	/**
+	 * Returns the paths this handler responds to.
+	 *
+	 * @return an array of paths
+	 */
+	@Override
+	public String[] getPaths() {
+		return new String[] { "/function_jump_target_addresses", "/function_jump_targets" };
 	}
 
 	@Override
