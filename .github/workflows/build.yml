@@ -2,7 +2,7 @@ name: Build Ghidra Extension
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, fix-build-action ]
   pull_request:
     branches: [ main, master ]
 
