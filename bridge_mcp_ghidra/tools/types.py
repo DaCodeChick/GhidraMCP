@@ -1,61 +1,61 @@
 import json
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context, GhidraValidationError, validate_function_name, validate_hex_address
+from ..context import ghidra_context, GhidraValidationError, validate_hex_address
 from .strings import inspect_memory_content
 
 def _verify_content_before_classification(address: str) -> dict:
-    """
-    Internal helper: Verify memory content before applying classification.
+	"""
+	Internal helper: Verify memory content before applying classification.
 
-    This prevents misidentifying strings as numeric data by inspecting actual bytes.
+	This prevents misidentifying strings as numeric data by inspecting actual bytes.
 
-    Args:
-        address: Hex address to verify
+	Args:
+		address: Hex address to verify
 
-    Returns:
-        Dictionary with verification results:
-        {
-            "is_string": bool,
-            "detected_string": str or None,
-            "suggested_type": str or None,
-            "printable_ratio": float,
-            "recommendation": str
-        }
-    """
+	Returns:
+		Dictionary with verification results:
+		{
+			"is_string": bool,
+			"detected_string": str or None,
+			"suggested_type": str or None,
+			"printable_ratio": float,
+			"recommendation": str
+		}
+	"""
 
-    try:
-        # Use inspect_memory_content to check what the data actually contains
-        result = inspect_memory_content(address, length=64, detect_strings=True)
-        data = json.loads(result)
+	try:
+		# Use inspect_memory_content to check what the data actually contains
+		result = inspect_memory_content(address, length=64, detect_strings=True)
+		data = json.loads(result)
 
-        verification = {
-            "is_string": data.get("is_likely_string", False),
-            "detected_string": data.get("detected_string"),
-            "suggested_type": data.get("suggested_type"),
-            "printable_ratio": float(data.get("printable_ratio", 0.0)),
-            "recommendation": ""
-        }
+		verification = {
+			"is_string": data.get("is_likely_string", False),
+			"detected_string": data.get("detected_string"),
+			"suggested_type": data.get("suggested_type"),
+			"printable_ratio": float(data.get("printable_ratio", 0.0)),
+			"recommendation": ""
+		}
 
-        if verification["is_string"]:
-            verification["recommendation"] = (
-                f"WARNING: Content appears to be a string (\"{verification['detected_string']}\"). "
-                f"Consider using classification='STRING' with type '{verification['suggested_type']}' "
-                f"instead of numeric types."
-            )
-        else:
-            verification["recommendation"] = "Content verification passed: not a string."
+		if verification["is_string"]:
+			verification["recommendation"] = (
+				f"WARNING: Content appears to be a string (\"{verification['detected_string']}\"). "
+				f"Consider using classification='STRING' with type '{verification['suggested_type']}' "
+				f"instead of numeric types."
+			)
+		else:
+			verification["recommendation"] = "Content verification passed: not a string."
 
-        return verification
+		return verification
 
-    except Exception as e:
-        ghidra_context.http_client.logger.warning(f"Content verification failed for {address}: {e}")
-        return {
-            "is_string": False,
-            "detected_string": None,
-            "suggested_type": None,
-            "printable_ratio": 0.0,
-            "recommendation": f"Content verification failed: {e}"
-        }
+	except Exception as e:
+		ghidra_context.http_client.logger.warning(f"Content verification failed for {address}: {e}")
+		return {
+			"is_string": False,
+			"detected_string": None,
+			"suggested_type": None,
+			"printable_ratio": 0.0,
+			"recommendation": f"Content verification failed: {e}"
+		}
 
 def register_type_tools(mcp: FastMCP):
 	"""Register data type management tools with the MCP server."""
@@ -241,19 +241,21 @@ def register_type_tools(mcp: FastMCP):
 		return ghidra_context.http_client.safe_get("get_type_size", {"type_name": type_name})
 
 	@mcp.tool()
-	def import_data_types(source: str, format: str = "c") -> str:
+	def get_valid_data_types(
+		category: str = None
+	) -> str:
 		"""
-		Import data types from various sources (placeholder for future implementation).
-		
-		Args:
-			source: Source data containing type definitions
-			format: Format of the source data ("c", "json") - default: "c"
-			
-		Returns:
-			Import results and status
-		"""
+		Get list of valid Ghidra data type strings (v1.5.0).
+		Helps construct proper type definitions for create_struct and other type operations.
 
-		return ghidra_context.http_client.safe_post("import_data_types", {"source": source, "format": format})
+		Args:
+			category: Optional category filter (not currently used)
+
+		Returns:
+			JSON with lists of builtin_types and windows_types
+		"""
+		params = {"category": category} if category else {}
+		return ghidra_context.http_client.safe_get("get_valid_data_types", params)
 
 	@mcp.tool()
 	def list_data_types(category: str = None, offset: int = 0, limit: int = 100) -> list:
@@ -293,18 +295,22 @@ def register_type_tools(mcp: FastMCP):
 		return ghidra_context.http_client.safe_get("search_data_types", {"pattern": pattern, "offset": offset, "limit": limit})
 
 	@mcp.tool()
-	def validate_data_type(address: str, type_name: str) -> str:
+	def validate_data_type(
+		address: str,
+		type_name: str
+	) -> str:
 		"""
-		Validate if a data type can be properly applied at a given address.
-		
-		Args:
-			address: Target address in hex format (e.g., "0x1400010a0")
-			type_name: Name of the data type to validate
-			
-		Returns:
-			Validation results including memory availability, alignment, and conflicts
-		"""
+		Validate if a data type can be applied at a given address (v1.5.0).
+		Checks memory availability, size compatibility, and alignment.
 
-		if not validate_hex_address(address):
-			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
-		return ghidra_context.http_client.safe_get("validate_data_type", {"address": address, "type_name": type_name})
+		Args:
+			address: Target address in hex format
+			type_name: Name of the data type to validate
+
+		Returns:
+			JSON with validation results including memory availability and size checks
+		"""
+		validate_hex_address(address)
+
+		params = {"address": address, "type_name": type_name}
+		return ghidra_context.http_client.safe_get("validate_data_type", params)

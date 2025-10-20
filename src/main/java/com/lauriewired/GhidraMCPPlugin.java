@@ -236,15 +236,16 @@ public class GhidraMCPPlugin extends Plugin {
 	@Override
 	public void dispose() {
 		if (server != null) {
+			Msg.info(this, "Stopping GhidraMCP HTTP server...");
 			try {
-				server.stop(0);
-				// Give the server time to fully stop and release all resources
-				Thread.sleep(500);
+				server.stop(1); // Stop with a small delay (e.g., 1 second) for connections to finish
+				// Give the server time to fully release the port
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
-				Msg.warn(this, "Interrupted while waiting for server to stop");
 			}
-			server = null;
+			server = null; // Nullify the reference
+			Msg.info(this, "GhidraMCP HTTP server stopped.");
 		}
 		super.dispose();
 	}

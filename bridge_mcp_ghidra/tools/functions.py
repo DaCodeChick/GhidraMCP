@@ -1,8 +1,64 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context, GhidraValidationError, validate_function_name, validate_hex_address
+from ..context import ghidra_context, GhidraValidationError, validate_hex_address
 
 def register_function_tools(mcp: FastMCP):
 	"""Register function-related tools to the FastMCP instance."""
+
+	@mcp.tool()
+	def analyze_function_completeness(
+		function_address: str
+	) -> str:
+		"""
+		Analyze how completely a function has been documented (v1.5.0).
+		Checks for custom names, prototypes, comments, and undefined variables.
+
+		Args:
+			function_address: Function address in hex format
+
+		Returns:
+			JSON with completeness analysis including:
+			- has_custom_name, has_prototype, has_calling_convention
+			- has_plate_comment, undefined_variables
+			- completeness_score (0-100)
+		"""
+		validate_hex_address(function_address)
+
+		params = {"function_address": function_address}
+		return ghidra_context.http_client.safe_get("analyze_function_completeness", params)
+
+	@mcp.tool()
+	def batch_rename_function_components(
+		function_address: str,
+		function_name: str = None,
+		parameter_renames: dict = None,
+		local_renames: dict = None,
+		return_type: str = None
+	) -> str:
+		"""
+		Rename function and all its components atomically (v1.5.0).
+		Combines multiple rename operations into a single transaction.
+
+		Args:
+			function_address: Function address in hex format
+			function_name: New name for the function (optional)
+			parameter_renames: Dict of {"old_name": "new_name"} for parameters
+			local_renames: Dict of {"old_name": "new_name"} for local variables
+			return_type: New return type (optional)
+
+		Returns:
+			JSON with success status and counts of renamed components
+		"""
+		validate_hex_address(function_address)
+
+		payload = {
+			"function_address": function_address,
+			"function_name": function_name,
+			"parameter_renames": parameter_renames or {},
+			"local_renames": local_renames or {},
+			"return_type": return_type
+		}
+
+		return ghidra_context.http_client.safe_post_json("batch_rename_function_components", payload)
 
 	@mcp.tool()
 	def create_function_signature(name: str, return_type: str, parameters: str = None) -> str:
@@ -65,6 +121,37 @@ def register_function_tools(mcp: FastMCP):
 			raise GhidraValidationError(f"Invalid hexadecimal address: {address}")
 
 		return ghidra_context.http_client.safe_get("disassemble_function", {"address": address})
+
+	@mcp.tool()
+	def find_next_undefined_function(
+		start_address: str = None,
+		criteria: str = "name_pattern",
+		pattern: str = "FUN_",
+		direction: str = "ascending"
+	) -> str:
+		"""
+		Find the next function needing analysis (v1.5.0).
+		Intelligently searches for functions matching specified criteria.
+
+		Args:
+			start_address: Starting address for search (default: program min address)
+			criteria: Search criteria (default: "name_pattern")
+			pattern: Name pattern to match (default: "FUN_")
+			direction: Search direction "ascending" or "descending" (default: "ascending")
+
+		Returns:
+			JSON with found function details or {"found": false}
+		"""
+		if start_address:
+			validate_hex_address(start_address)
+
+		params = {
+			"start_address": start_address,
+			"criteria": criteria,
+			"pattern": pattern,
+			"direction": direction
+		}
+		return ghidra_context.http_client.safe_get("find_next_undefined_function", params)
 
 	@mcp.tool()
 	def get_current_function() -> str:

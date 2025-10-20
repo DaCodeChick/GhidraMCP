@@ -5,6 +5,47 @@ def register_label_tools(mcp: FastMCP):
 	"""Register label-related tools in the MCP instance."""
 
 	@mcp.tool()
+	def batch_create_labels(labels: list) -> str:
+		"""
+		Create multiple labels in a single atomic operation (v1.5.1).
+
+		This tool creates multiple labels in one transaction, dramatically reducing API calls
+		and preventing user interruption hooks from triggering repeatedly. This is the
+		preferred method for creating multiple labels during function documentation.
+
+		Performance impact:
+		- Reduces N API calls to 1 call
+		- Prevents interruption after each label creation
+		- Atomic transaction ensures all-or-nothing semantics
+
+		Args:
+			labels: List of label objects, each with "address" and "name" fields
+					Example: [{"address": "0x6faeb266", "name": "begin_slot_processing"},
+							{"address": "0x6faeb280", "name": "loop_check_slot_active"}]
+
+		Returns:
+			JSON string with success status, counts, and any errors:
+			{"success": true, "labels_created": 5, "labels_skipped": 1, "labels_failed": 0}
+		"""
+		if not labels or not isinstance(labels, list):
+			raise GhidraValidationError("labels must be a non-empty list")
+
+		# Validate each label entry
+		for i, label in enumerate(labels):
+			if not isinstance(label, dict):
+				raise GhidraValidationError(f"Label at index {i} must be a dictionary")
+
+			if "address" not in label or "name" not in label:
+				raise GhidraValidationError(f"Label at index {i} must have 'address' and 'name' fields")
+
+			if not validate_hex_address(label["address"]):
+				raise GhidraValidationError(f"Invalid hexadecimal address at index {i}: {label['address']}")
+
+		return safe_post_json("batch_create_labels", {
+			"labels": labels
+		})
+
+	@mcp.tool()
 	def create_label(address: str, name: str) -> str:
 		"""
 		Create a new label at the specified address.
@@ -49,12 +90,29 @@ def register_label_tools(mcp: FastMCP):
 		"""
 		Rename a data label at the specified address.
 		
+		IMPORTANT: This tool only works for DEFINED data (data with an existing symbol/type).
+		For undefined memory addresses, use create_label() or rename_or_label() instead.
+
+		What is "defined data"?
+		- Data that has been typed (e.g., dword, struct, array)
+		- Data created via apply_data_type() or Ghidra's "D" key
+		- Data with existing symbols in the Symbol Tree
+
+		If you get an error like "No defined data at address", use:
+		- create_label(address, name) for undefined addresses
+		- rename_or_label(address, name) for automatic detection (recommended)
+
 		Args:
 			address: Memory address in hex format (e.g., "0x1400010a0")
 			new_name: New name for the data label
-			
+
 		Returns:
 			Success or failure message indicating the result of the rename operation
+
+		See Also:
+			- create_label(): Create label at undefined address
+			- rename_or_label(): Automatically detect and use correct method
+			- apply_data_type(): Define data type before renaming
 		"""
 
 		if not validate_hex_address(address):
