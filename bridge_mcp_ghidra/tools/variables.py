@@ -5,6 +5,46 @@ def register_variable_tools(mcp: FastMCP):
 	"""Register variable-related tools in the MCP server."""
 
 	@mcp.tool()
+	def batch_rename_variables(
+		function_address: str,
+		variable_renames: dict
+	) -> str:
+		"""
+		Rename multiple variables in a function atomically (v1.6.0).
+
+		This tool renames multiple local variables or parameters in a single
+		transaction with partial success reporting.
+
+		Args:
+			function_address: Function address in hex format (e.g., "0x401000")
+			variable_renames: Dict of {"old_name": "new_name"} pairs
+
+		Returns:
+			JSON with detailed results:
+			{
+			"success": true,
+			"variables_renamed": 5,
+			"variables_failed": 1,
+			"errors": [{"old_name": "var1", "error": "Variable not found"}]
+			}
+
+		Example:
+			batch_rename_variables("0x6fb385a0", {
+				"param_1": "eventRecord",
+				"local_4": "playerNode",
+				"iVar1": "skillIndex"
+			})
+		"""
+		validate_hex_address(function_address)
+
+		payload = {
+			"function_address": function_address,
+			"variable_renames": variable_renames or {}
+		}
+
+		return ghidra_context.http_client.safe_post_json("batch_rename_variables", payload)
+
+	@mcp.tool()
 	def batch_set_variable_types(
 		function_address: str,
 		variable_types: dict

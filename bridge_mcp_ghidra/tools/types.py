@@ -314,3 +314,23 @@ def register_type_tools(mcp: FastMCP):
 
 		params = {"address": address, "type_name": type_name}
 		return ghidra_context.http_client.safe_get("validate_data_type", params)
+
+	@mcp.tool()
+	def validate_data_type_exists(type_name: str) -> str:
+		"""
+		Check if a data type exists in Ghidra's type manager (v1.6.0).
+
+		Args:
+			type_name: Name of the data type to check (e.g., "DWORD", "MyStruct")
+
+		Returns:
+			JSON with validation results:
+			{
+			"exists": true|false,
+			"type_category": "builtin"|"struct"|"typedef"|"pointer",
+			"size": 4,
+			"path": "/builtin/DWORD"
+			}
+		"""
+		
+		return ghidra_context.http_client.safe_get("validate_data_type_exists", {"type_name": type_name})

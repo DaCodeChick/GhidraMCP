@@ -1,8 +1,32 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context
+from ..context import ghidra_context, validate_hex_address
 
 def register_address_tools(mcp: FastMCP):
 	"""Register address-related tools to the MCP instance."""
+
+	@mcp.tool()
+	def can_rename_at_address(address: str) -> str:
+		"""
+		Check what kind of symbol exists at an address (v1.6.0).
+
+		Determines whether address contains defined data, undefined bytes,
+		or code, helping choose between rename_data, create_label, etc.
+
+		Args:
+			address: Memory address in hex format
+
+		Returns:
+			JSON with address analysis:
+			{
+			"can_rename_data": true|false,
+			"type": "defined_data"|"undefined"|"code"|"invalid",
+			"current_name": "DAT_6fb385a0"|"FUN_6fb385a0"|null,
+			"suggested_operation": "rename_data"|"create_label"|"rename_function"
+			}
+		"""
+		
+		validate_hex_address(address)
+		return ghidra_context.http_client.safe_get("can_rename_at_address", {"address": address})
 
 	@mcp.tool()
 	def get_current_address() -> str:
