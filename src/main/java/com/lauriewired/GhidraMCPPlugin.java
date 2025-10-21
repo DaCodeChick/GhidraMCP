@@ -29,7 +29,7 @@ import java.util.*;
 	category = PluginCategoryNames.ANALYSIS,
 	shortDescription = "GhidraMCP - HTTP server plugin",
 	description = "GhidraMCP - Starts an embedded HTTP server to expose program data via REST API and MCP bridge. " +
-				  "Provides 100+ endpoints for reverse engineering automation. Port configurable via Tool Options. "
+				  "Provides endpoints for reverse engineering automation. Port configurable via Tool Options. "
 )
 public class GhidraMCPPlugin extends Plugin {
 	/** The embedded HTTP server instance that handles all API requests */
