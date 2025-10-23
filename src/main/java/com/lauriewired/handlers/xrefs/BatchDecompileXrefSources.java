@@ -11,8 +11,13 @@ import ghidra.program.model.listing.Program;
 import ghidra.program.model.symbol.Reference;
 import ghidra.program.model.symbol.ReferenceIterator;
 import ghidra.program.model.symbol.ReferenceManager;
+import ghidra.util.task.ConsoleTaskMonitor;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
@@ -33,8 +38,10 @@ public final class BatchDecompileXrefSources extends Handler {
 		String targetAddress = (String) params.get("target_address");
 		boolean includeFunctionNames = parseBoolOrDefault(params.get("include_function_names"), true);
 		boolean includeUsageContext = parseBoolOrDefault(params.get("include_usage_context"), true);
+		int limit = parseIntOrDefault(String.valueOf(params.get("limit")), 10);
+		int offset = parseIntOrDefault(String.valueOf(params.get("offset")), 0);
 
-		String result = batchDecompileXrefSources(targetAddress, includeFunctionNames, includeUsageContext);
+		String result = batchDecompileXrefSources(targetAddress, includeFunctionNames, includeUsageContext, limit, offset);
 		sendResponse(exchange, result);
 	}
 
@@ -44,11 +51,15 @@ public final class BatchDecompileXrefSources extends Handler {
 	 * @param targetAddressStr the target address as a string
 	 * @param includeFunctionNames whether to include function names in the output
 	 * @param includeUsageContext whether to include usage context in the output
+	 * @param limit maximum number of functions to return
+	 * @param offset number of functions to skip before starting to return results
 	 * @return a JSON string containing decompiled code and metadata
 	 */
 	private String batchDecompileXrefSources(String targetAddressStr,
 											 boolean includeFunctionNames,
-											 boolean includeUsageContext) {
+											 boolean includeUsageContext,
+											 int limit,
+											 int offset) {
 		Program program = getCurrentProgram(tool);
 		if (program == null) return "{\"error\": \"No program loaded\"}";
 
@@ -70,18 +81,34 @@ public final class BatchDecompileXrefSources extends Handler {
 				}
 			}
 
+			// Convert to list for pagination
+			List<Function> functionList = new ArrayList<>(functionsToDecompile);
+			int totalFunctions = functionList.size();
+
+			// Apply pagination
+			int startIndex = Math.min(offset, totalFunctions);
+			int endIndex = Math.min(offset + limit, totalFunctions);
+			List<Function> paginatedFunctions = functionList.subList(startIndex, endIndex);
+
 			StringBuilder json = new StringBuilder();
 			json.append("{");
+			json.append("\"total_functions\": ").append(totalFunctions).append(",");
+			json.append("\"offset\": ").append(offset).append(",");
+			json.append("\"limit\": ").append(limit).append(",");
+			json.append("\"returned\": ").append(paginatedFunctions.size()).append(",");
+			json.append("\"functions\": [");
+
 			boolean first = true;
 
 			DecompInterface decomp = new DecompInterface();
 			decomp.openProgram(program);
 
-			for (Function func : functionsToDecompile) {
+			for (Function func : paginatedFunctions) {
 				if (!first) json.append(",");
 				first = false;
 
-				json.append("\"").append(func.getEntryPoint().toString()).append("\": {");
+				json.append("{");
+				json.append("\"function_address\": \"").append(func.getEntryPoint().toString()).append("\",");
 				json.append("\"function_name\": \"").append(func.getName()).append("\",");
 
 				DecompileResults results = decomp.decompileFunction(func, 30, new ConsoleTaskMonitor());
@@ -97,7 +124,7 @@ public final class BatchDecompileXrefSources extends Handler {
 			}
 
 			decomp.dispose();
-			json.append("}");
+			json.append("]}");
 			return json.toString();
 		} catch (Exception e) {
 			return "{\"error\": \"" + escapeJson(e.getMessage()) + "\"}";

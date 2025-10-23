@@ -3,6 +3,7 @@ package com.lauriewired.handlers.data;
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
 import ghidra.framework.plugintool.PluginTool;
+import ghidra.program.model.data.DataType;
 import ghidra.program.model.listing.Data;
 import ghidra.program.model.listing.DataIterator;
 import ghidra.program.model.listing.Program;
@@ -63,12 +64,23 @@ public final class ListDefinedData extends Handler {
 			while (it.hasNext()) {
 				Data data = it.next();
 				if (block.contains(data.getAddress())) {
-					String label = data.getLabel() != null ? data.getLabel() : "(unnamed)";
-					String valRepr = data.getDefaultValueRepresentation();
-					lines.add(String.format("%s: %s = %s",
-							data.getAddress(),
-							escapeNonAscii(label),
-							escapeNonAscii(valRepr)));
+					// Use same format as list_globals: "name @ address [type] (info)"
+					StringBuilder info = new StringBuilder();
+					String label = data.getLabel() != null ? data.getLabel() : "DAT_" + data.getAddress().toString().replace(":", "");
+					info.append(label);
+					info.append(" @ ").append(data.getAddress().toString().replace(":", ""));
+
+					// Add data type
+					DataType dt = data.getDataType();
+					String typeName = (dt != null) ? dt.getName() : "undefined";
+					info.append(" [").append(typeName).append("]");
+
+					// Add size information
+					int length = data.getLength();
+					String sizeStr = (length == 1) ? "1 byte" : length + " bytes";
+					info.append(" (").append(sizeStr).append(")");
+
+					lines.add(info.toString());
 				}
 			}
 		}
