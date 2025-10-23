@@ -70,7 +70,7 @@ public final class BatchSetComments extends Handler {
 				int tx = program.startTransaction("Batch Set Comments");
 				try {
 					// Set plate comment if provided
-					if (plateComment != null && functionAddress != null) {
+					if (plateComment != null && !plateComment.isEmpty() && !plateComment.equals("null") && functionAddress != null) {
 						Address funcAddr = program.getAddressFactory().getAddress(functionAddress);
 						if (funcAddr != null) {
 							Function func = program.getFunctionManager().getFunctionAt(funcAddr);
@@ -123,9 +123,9 @@ public final class BatchSetComments extends Handler {
 			// Force event processing to ensure changes propagate to decompiler cache
 			if (success.get()) {
 				program.flushEvents();
-				// Small delay to ensure decompiler cache refresh
+				// Increased delay to ensure decompiler cache refresh
 				try {
-					Thread.sleep(50);
+					Thread.sleep(300);
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}

@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from ..context import ghidra_context, GhidraValidationError, validate_hex_address
+from ..context import ghidra_context, GhidraValidationError, validate_function_name, validate_hex_address
 
 def register_function_tools(mcp: FastMCP):
 	"""Register function-related tools to the FastMCP instance."""
@@ -70,6 +70,34 @@ def register_function_tools(mcp: FastMCP):
 
 		params = {"function_address": function_address}
 		return ghidra_context.http_client.safe_get("analyze_function_completeness", params)
+
+	@mcp.tool()
+	def batch_decompile_functions(function_names: list) -> dict:
+		"""
+		Decompile multiple functions in a single request for better performance.
+
+		Args:
+			function_names: List of function names to decompile (max 20)
+
+		Returns:
+			Dictionary mapping function names to their decompiled code:
+			{
+				"FunctionName1": "void FunctionName1() { ... }",
+				"FunctionName2": "int FunctionName2(int param) { ... }",
+				...
+			}
+
+		Example:
+			results = batch_decompile_functions(["main", "initializeApp", "cleanup"])
+			for func_name, code in results.items():
+				print(f"{func_name}:\n{code}\n")
+		"""
+		# Validate all function names
+		for name in function_names:
+			if not validate_function_name(name):
+				raise GhidraValidationError(f"Invalid function name: {name}")
+
+		return ghidra_context.http_client.safe_get("batch_decompile", {"functions": ",".join(function_names)})
 
 	@mcp.tool()
 	def batch_rename_function_components(

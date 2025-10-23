@@ -2,6 +2,7 @@ package com.lauriewired.handlers.data;
 
 import com.lauriewired.handlers.Handler;
 import com.sun.net.httpserver.HttpExchange;
+import ghidra.app.cmd.disassemble.DisassembleCommand;
 import ghidra.framework.plugintool.PluginTool;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressSet;
@@ -144,7 +145,7 @@ public final class DisassembleBytes extends Handler {
 					long numBytes = addressSet.getNumAddresses();
 
 					// Execute disassembly
-					ghidra.app.cmd.disassemble.DisassembleCommand cmd =
+					DisassembleCommand cmd =
 						new ghidra.app.cmd.disassemble.DisassembleCommand(addressSet, null, restrictToExecuteMemory);
 
 					// Prevent auto-analysis cascade

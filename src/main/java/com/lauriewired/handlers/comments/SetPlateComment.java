@@ -91,7 +91,7 @@ public final class SetPlateComment extends Handler {
 				program.flushEvents();
 				// Increased delay to ensure decompiler cache refresh
 				try {
-					Thread.sleep(200);
+					Thread.sleep(500);
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}

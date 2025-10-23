@@ -11,6 +11,7 @@ from .globals import register_global_tools
 from .labels import register_label_tools
 from .misc import register_misc_tools
 from .namespaces import register_namespace_tools
+from .security import register_security_tools
 from .strings import register_string_tools
 from .structs import register_struct_tools
 from .types import register_type_tools
@@ -31,6 +32,7 @@ def register_all_tools():
 	register_label_tools()
 	register_misc_tools()
 	register_namespace_tools()
+	register_security_tools()
 	register_string_tools()
 	register_struct_tools()
 	register_type_tools()
