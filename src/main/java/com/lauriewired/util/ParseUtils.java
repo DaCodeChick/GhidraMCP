@@ -14,6 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.lauriewired.GhidraMCPPlugin.*;
+
 /**
  * Utility methods for parsing HTTP requests and responses.
  * 
@@ -56,26 +58,26 @@ public final class ParseUtils {
 	 * @return A list of maps if the object is a list of maps, otherwise null.
 	 */
 	@SuppressWarnings("unchecked")
-    public static List<Map<String, String>> convertToMapList(Object obj) {
-        if (obj == null) {
-            return null;
-        }
+	public static List<Map<String, String>> convertToMapList(Object obj) {
+		if (obj == null) {
+			return null;
+		}
 
-        if (obj instanceof List) {
-            List<Object> objList = (List<Object>) obj;
-            List<Map<String, String>> result = new ArrayList<>();
+		if (obj instanceof List) {
+			List<Object> objList = (List<Object>) obj;
+			List<Map<String, String>> result = new ArrayList<>();
 
-            for (Object item : objList) {
-                if (item instanceof Map) {
-                    result.add((Map<String, String>) item);
-                }
-            }
+			for (Object item : objList) {
+				if (item instanceof Map) {
+					result.add((Map<String, String>) item);
+				}
+			}
 
-            return result;
-        }
+			return result;
+		}
 
-        return null;
-    }
+		return null;
+	}
 
 	/**
 	 * Decode a hexadecimal string into a byte array.
@@ -506,7 +508,11 @@ public final class ParseUtils {
 	 */
 	public static void sendResponse(HttpExchange exchange, String response) throws IOException {
 		byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
-		exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
+		Headers headers = exchange.getResponseHeaders();
+		headers.set("Content-Type", "text/plain; charset=utf-8");
+		// Enable HTTP keep-alive for long-running operations
+		headers.set("Connection", "keep-alive");
+		headers.set("Keep-Alive", "timeout=" + HTTP_IDLE_TIMEOUT_SECONDS + ", max=100");
 		exchange.sendResponseHeaders(200, bytes.length);
 		try (OutputStream os = exchange.getResponseBody()) {
 			os.write(bytes);

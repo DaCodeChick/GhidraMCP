@@ -66,6 +66,10 @@ public final class BatchRenameVariables extends Handler {
 		try {
 			SwingUtilities.invokeAndWait(() -> {
 				int tx = program.startTransaction("Batch Rename Variables");
+				// Suppress events during batch operation to prevent re-analysis on each rename
+				int eventTx = program.startTransaction("Suppress Events");
+				program.flushEvents();  // Flush any pending events before we start
+				
 				try {
 					Address addr = program.getAddressFactory().getAddress(functionAddress);
 					if (addr == null) {
@@ -80,7 +84,7 @@ public final class BatchRenameVariables extends Handler {
 					}
 
 					if (variableRenames != null && !variableRenames.isEmpty()) {
-						// Rename parameters
+						// Rename parameters (events suppressed - no re-analysis per rename)
 						for (Parameter param : func.getParameters()) {
 							String newName = variableRenames.get(param.getName());
 							if (newName != null && !newName.isEmpty()) {
@@ -94,7 +98,7 @@ public final class BatchRenameVariables extends Handler {
 							}
 						}
 
-						// Rename local variables
+						// Rename local variables (events suppressed - no re-analysis per rename)
 						for (Variable local : func.getLocalVariables()) {
 							String newName = variableRenames.get(local.getName());
 							if (newName != null && !newName.isEmpty()) {
@@ -114,6 +118,9 @@ public final class BatchRenameVariables extends Handler {
 					result.append("\"error\": \"").append(e.getMessage().replace("\"", "\\\"")).append("\"");
 					Msg.error(this, "Error in batch rename variables", e);
 				} finally {
+					// End event suppression transaction - this triggers ONE re-analysis for all renames
+					program.endTransaction(eventTx, success.get());
+					program.flushEvents();  // Force event processing now that we're done
 					program.endTransaction(tx, success.get());
 				}
 			});

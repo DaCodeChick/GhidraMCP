@@ -207,16 +207,23 @@ public final class DocumentFunctionComplete extends Handler {
 								if (cAddr != null) {
 									program.getListing().setComment(cAddr, CodeUnit.PRE_COMMENT, commentText);
 									commentsSet++;
+									// Log progress every 10 comments
+									if (commentsSet % 10 == 0) {
+										Msg.info(this, "Progress: " + commentsSet + "/" + totalComments + " decompiler comments set");
+									}
 								}
 							}
 						}
 						operationsCompleted.incrementAndGet();
 						result.append("\"decompiler_comments_set\": ").append(commentsSet).append(", ");
+						Msg.info(this, "Completed: " + commentsSet + " decompiler comments set");
 					}
 
-					// Set disassembly comments
+					// Set disassembly comments with process logging
 					if (disassemblyComments != null && !disassemblyComments.isEmpty()) {
 						int commentsSet = 0;
+						int totalComments = disassemblyComments.size();
+						Msg.info(this, "Setting " + totalComments + " disassembly comments...");
 						for (Map<String, String> comment : disassemblyComments) {
 							String commentAddr = comment.get("address");
 							String commentText = comment.get("comment");
@@ -225,11 +232,16 @@ public final class DocumentFunctionComplete extends Handler {
 								if (cAddr != null) {
 									program.getListing().setComment(cAddr, CodeUnit.EOL_COMMENT, commentText);
 									commentsSet++;
+									// Log progress every 10 comments
+									if (commentsSet % 10 == 0) {
+										Msg.info(this, "Progress: " + commentsSet + "/" + totalComments + " disassembly comments set");
+									}
 								}
 							}
 						}
 						operationsCompleted.incrementAndGet();
 						result.append("\"disassembly_comments_set\": ").append(commentsSet).append(", ");
+						Msg.info(this, "Completed: " + commentsSet + " disassembly comments set");
 					}
 
 					result.append("\"operations_completed\": ").append(operationsCompleted.get());

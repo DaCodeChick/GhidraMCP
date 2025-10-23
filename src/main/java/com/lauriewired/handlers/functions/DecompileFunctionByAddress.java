@@ -12,6 +12,7 @@ import ghidra.program.model.listing.Program;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.lauriewired.GhidraMCPPlugin.*;
 import static com.lauriewired.util.GhidraUtils.decompileFunctionInProgram;
 import static com.lauriewired.util.ParseUtils.*;
 import static ghidra.program.util.GhidraProgramUtilities.getCurrentProgram;
@@ -52,22 +53,22 @@ public final class DecompileFunctionByAddress extends Handler {
 	 * @return the decompiled C code or an error message
 	 */
 	private String decompileFunctionByAddress(String addressStr) {
-		Program program = getCurrentProgram(tool);
-		if (program == null)
-			return "No program loaded";
-		if (addressStr == null || addressStr.isEmpty())
-			return "Address is required";
+		Program program = getCurrentProgram();
+		if (program == null) return "No program loaded";
+		if (addressStr == null || addressStr.isEmpty()) return "Address is required";
 
 		try {
 			Address addr = program.getAddressFactory().getAddress(addressStr);
-			Function func = program.getListing().getFunctionContaining(addr);
-			if (func == null)
-				return "No function found at or containing address " + addressStr;
+			Function func = getFunctionForAddress(program, addr);
+			if (func == null) return "No function found at or containing address " + addressStr;
 
-			String decompCode = decompileFunctionInProgram(func, program);
-            return (decompCode != null && !decompCode.isEmpty()) 
-                ? decompCode 
-                : "Decompilation failed";
+			DecompInterface decomp = new DecompInterface();
+			decomp.openProgram(program);
+			DecompileResults result = decomp.decompileFunction(func, DECOMPILE_TIMEOUT_SECONDS, new ConsoleTaskMonitor());
+
+			return (result != null && result.decompileCompleted()) 
+				? result.getDecompiledFunction().getC() 
+				: "Decompilation failed";
 		} catch (Exception e) {
 			return "Error decompiling function: " + e.getMessage();
 		}
